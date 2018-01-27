@@ -9,6 +9,12 @@ public class ArmySpawner : MonoBehaviour {
 	public int MaxNum;
 
 
+	private Queue<GameObject> armyQueue = new Queue<GameObject>();
+	private Army[] armies;
+
+	void Start(){
+		Army[] armies = GameObject.FindObjectsOfType<Army> ();
+	}
 
 	public void InstantiatePrefab(Vector3 location){
 		Transform parent = this.transform;
@@ -16,13 +22,31 @@ public class ArmySpawner : MonoBehaviour {
 		Instantiate (ArmyPrefab, location, Quaternion.identity, parent);
 
 	}
-	// Use this for initialization
-	void Start () {
-		
-	}
+
+	private void PreparePrefab(GameObject prefab, Vector3 location){
+		Transform parent = this.transform;
+		Quaternion rotation = Quaternion.identity;
+
+
+		prefab.transform.position = location;
+		prefab.transform.rotation = rotation;
+		prefab.transform.parent = parent;
 	
-	// Update is called once per frame
-	void Update () {
+
+	}
+
+	private void InstantiateEnqueuedItem(GameObject enquedItem){
+		Instantiate (enquedItem);
+	}
+
+	public void Enqueue(GameObject objectToEnqueue){
+		
+
+	}
+
+	public void DeQueue(){
 		
 	}
+		
+
 }

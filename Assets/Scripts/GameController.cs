@@ -35,6 +35,12 @@ public class GameController : MonoBehaviour {
 
 	}
 
+	void OnDisable(){
+		EventManager.StopListening(Board.SquareClickedNotification, squareClickedNotificationAction); 
+		EventManager.StopListening(Lookout.Game.DidBeginGameNotification, didBeginGameNotificationAction);
+		EventManager.StopListening(Lookout.Game.DidOccupySquareNotification, didOccupySquareNotificationAction);
+	}
+
 
 
 	void OnBoardSquareClicked(object args){
@@ -43,25 +49,30 @@ public class GameController : MonoBehaviour {
 			game.Reset ();
 
 		} else {
-		
-			Debug.Log ("OnBoardSquareClicked now pass to place");
-			game.Place((int)args);
+			
+			string argsAsString = game.convertArrayToString ((int[])args);
+
+			game.Place(argsAsString);
 		
 		}
 		
 	}
 
 	void OnDidOccupySquare(object args){
+	
+		string coordsAsString = args.ToString ();
 
-		Debug.Log(this.name + "says : OnDidOccupySquare has been called");
-		int index = (int)args;
-		Mark mark = game.board [index];
-		board.Show (index, mark);
+	
+		int[] coords = game.convertStringToArray (coordsAsString, 2);
+
+
+		Mark mark = game.boardDictionary [coordsAsString];
+
+		board.Show (coords, mark);
 	
 	}
 
 	void OnDidBeginGame(object args){
-	
 		Debug.Log ("Did Begin Game");
 	
 	}

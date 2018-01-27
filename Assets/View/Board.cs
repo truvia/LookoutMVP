@@ -22,13 +22,13 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 	}
 
 
-	public void Show(int index, Mark mark){
+	public void Show(int[] coords, Mark mark){
 		ArmySpawner armySpawner = mark == Mark.CON ? CONArmySpawner : USArmySpawner;
+//
+//		int x = coords % 3;
+//		int z = coords / 3;
 
-		int x = index % 3;
-		int z = index / 3;
-
-		Vector3 location = new Vector3 (x + 0.5f, 0, z+ 0.5f);
+		Vector3 location = new Vector3 (coords[0] + 0.5f, 0, coords[1] + 0.5f);
 		armySpawner.InstantiatePrefab (location);
 	}
 
@@ -39,13 +39,12 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 		int x = Mathf.FloorToInt (pos.x);
 		int z = Mathf.FloorToInt (pos.z);
 
-		if (x < 0 || z < 0 || x > 2 || z > 2) {
-			Debug.Log ("IpoitnerClickHander says out of range at x = " + x + " and z = " + z);
+		if (x < 0 || z < 0 || x > width || z > height) {
 			return;
 		}
 
-		int index = z * 3 + x;
-		EventManager.TriggerEvent (SquareClickedNotification, index); //need to transfer index somehow.
+		int[] coords = new int[]{x, z};
+		EventManager.TriggerEvent (SquareClickedNotification, coords); //need to transfer index somehow.
 
 	}
 

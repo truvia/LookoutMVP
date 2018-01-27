@@ -30,14 +30,15 @@ namespace Lookout
 
 		private int boardSize;
 		private Board boardView;
-		//private Dictionary <int[], Mark> boardDictionary;
+		public Dictionary <string, Mark> boardDictionary;
 
 
-		int[] wins = new int[] {
-			5, 21
+		string[] wins = new string[] {
+			"0,4", "4,0"
 		};
 
 		void Start(){
+		
 			boardView = GameObject.FindObjectOfType<Board> ();
 			boardSize = boardView.height * boardView.width;
 
@@ -45,39 +46,52 @@ namespace Lookout
 		}
 
 		public Game (){
-			board = new Mark[boardSize];
+			if (boardDictionary == null) {
+				boardDictionary = new Dictionary<string, Mark> ();
+			
+			}
 
-//			if (boardDictionary == null) {
-//				boardDictionary = new Dictionary<int[], Mark> ();
-//
-//			}
+
+
+			//board = new Mark[25];
+
 		}
 
 		public void Reset(){
-			for (int i = 0; i < boardSize; i++) {
-				board [i] = Mark.None;
-				control = startPlayer; //Sets the start player as the Confederates.
-				winner = Mark.None;
+			Debug.Log ("Reset is called");	
+			boardDictionary.Clear ();
 
-				EventManager.TriggerEvent (DidBeginGameNotification);
-				 
+			for (int z = 0; z < 5; z++) {
+				for (int x = 0; x < 5; x++) {
+					int[] coord = new int[]{x, z};
+
+					string coordAsString = convertArrayToString(coord);
+					boardDictionary.Add (coordAsString, Mark.None);
+				}
+
 			}
+
 		
+			control = startPlayer;
+			winner = Mark.None;
+			EventManager.TriggerEvent (DidBeginGameNotification);
+
 		}
 
-		public void Place (int index){
-			Debug.Log ("board at index " + index + " is " + board [index]);
+		public void Place (string coords){
+			
+			Mark markAtThisCoord = boardDictionary [coords];
 
-			if (board [index] != Mark.None) {
+			if (markAtThisCoord != Mark.None) {
 				return;
+			
 			}
 
-			board[index] = control;
+			boardDictionary [coords] = control;
 
-			EventManager.TriggerEvent (DidOccupySquareNotification, index);
+			EventManager.TriggerEvent (DidOccupySquareNotification, coords);
 
-
-				CheckForGameOver();
+			CheckForGameOver();
 
 			if(control != Mark.None){
 				ChangeTurn();
@@ -87,28 +101,27 @@ namespace Lookout
 		
 
 
-				void ChangeTurn(){
-					Debug.Log ("ChangeTurn called");
+		void ChangeTurn(){
+
+			Debug.Log ("ChangeTurn called");
 			control = (control == Mark.CON) ? Mark.USA : Mark.CON;
-					EventManager.TriggerEvent (DidChangeControlNotification);
+			EventManager.TriggerEvent (DidChangeControlNotification);
 
-				}
+		}
 
-			void CheckForGameOver(){
+		void CheckForGameOver(){
 
-				if (CheckForWin ()) {
+			if (CheckForWin ()) {
 				Debug.Log ("Check for win is true");
-					control = Mark.None;
-					
+				control = Mark.None;
 				EventManager.TriggerEvent (DidEndGameNotification);					}
 				
-				}
+		}
 
 		bool CheckForWin(){
-			Debug.Log ("board wins: " + board [wins [0]]);
-			Debug.Log ("board wins: " + board [wins [1]]);
-			Mark a = board[wins[0]];
-			Mark b = board[wins[1]];	
+			
+			Mark a = boardDictionary [wins [0]];
+			Mark b = boardDictionary [wins [1]];
 
 			if (a == b && a != Mark.None) {
 				winner = a;
@@ -117,6 +130,49 @@ namespace Lookout
 
 			return false;
 
+		}
+
+		public string convertArrayToString(int[] array){
+			string newString = "";
+
+			int x = 0;
+			foreach (int i in array) {
+				x++;	
+				newString += i.ToString ();
+
+				if (x < array.Length) {
+					newString += ",";
+				}
+
+
+			}
+
+			return newString;
+
+		}
+
+		public int[] convertStringToArray(string s, int numberOfCoordinates){
+		
+
+			string[] newStringArray = s.Split (',');
+
+			int[] coords = new int[2]; 
+
+			int z = 0;
+
+			foreach (string str in newStringArray) {
+				
+				int x = 0;
+				if (int.TryParse (str, out x)) {
+
+					coords [z] = x;
+					z++;
+				}
+
+
+			}
+
+			return coords;
 		}
 
 	}
