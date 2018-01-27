@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace Lookout
 {
@@ -13,9 +14,9 @@ namespace Lookout
 
 
 
+
 	public class Game{
 
-		public NotificationCentre2 notificationCentre = new NotificationCentre2();
 
 		public const string DidBeginGameNotification = "Game.DidBeginGameNotification";
 		public const string DidOccupySquareNotification = "Game.DidOccupySquareNotification";
@@ -25,22 +26,31 @@ namespace Lookout
 		public Mark control { get; private set;}
 		public Mark winner {get; private set;}
 		public Mark[] board {get; private set;}
-		public int boardSize = 25;
 		public Mark startPlayer = Mark.CON; //sets start player as the Confederates
 
-		
+		private int boardSize;
+		private Board boardView;
+		//private Dictionary <int[], Mark> boardDictionary;
+
 
 		int[] wins = new int[] {
 			5, 21
 		};
 
 		void Start(){
-			notificationCentre = GameObject.FindObjectOfType<NotificationCentre2> ();
+			boardView = GameObject.FindObjectOfType<Board> ();
+			boardSize = boardView.height * boardView.width;
+
+
 		}
 
 		public Game (){
 			board = new Mark[boardSize];
 
+//			if (boardDictionary == null) {
+//				boardDictionary = new Dictionary<int[], Mark> ();
+//
+//			}
 		}
 
 		public void Reset(){
@@ -49,23 +59,24 @@ namespace Lookout
 				control = startPlayer; //Sets the start player as the Confederates.
 				winner = Mark.None;
 
-
-
-				notificationCentre.PostNotification (DidBeginGameNotification, this);
-
-				//this.PostNotification (DidBeginGameNotification);
-			//	BroadcastMessage() 
+				EventManager.TriggerEvent (DidBeginGameNotification);
+				 
 			}
 		
 		}
 
 		public void Place (int index){
+			Debug.Log ("board at index " + index + " is " + board [index]);
+
 			if (board [index] != Mark.None) {
 				return;
 			}
-				board[index] = control;
-				notificationCentre.PostNotification(DidOccupySquareNotification, index);
-					
+
+			board[index] = control;
+
+			EventManager.TriggerEvent (DidOccupySquareNotification, index);
+
+
 				CheckForGameOver();
 
 			if(control != Mark.None){
@@ -77,27 +88,29 @@ namespace Lookout
 
 
 				void ChangeTurn(){
-		
-					control = (control == Mark.CON) ? Mark.CON : Mark.USA;
-			notificationCentre.PostNotification (DidChangeControlNotification, this);
-
+					Debug.Log ("ChangeTurn called");
+			control = (control == Mark.CON) ? Mark.USA : Mark.CON;
+					EventManager.TriggerEvent (DidChangeControlNotification);
 
 				}
 
 			void CheckForGameOver(){
-			
+
 				if (CheckForWin ()) {
+				Debug.Log ("Check for win is true");
 					control = Mark.None;
-					notificationCentre.PostNotification (DidEndGameNotification, this);
-					}
+					
+				EventManager.TriggerEvent (DidEndGameNotification);					}
 				
 				}
 
 		bool CheckForWin(){
+			Debug.Log ("board wins: " + board [wins [0]]);
+			Debug.Log ("board wins: " + board [wins [1]]);
 			Mark a = board[wins[0]];
 			Mark b = board[wins[1]];	
 
-			if (a == b) {
+			if (a == b && a != Mark.None) {
 				winner = a;
 				return true;
 			}

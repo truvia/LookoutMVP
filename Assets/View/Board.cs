@@ -6,19 +6,18 @@ using UnityEngine.EventSystems;
 
 public class Board : MonoBehaviour, IPointerClickHandler	 {
 
-	public const string SquareClickedNotification = "Board.SquareClickedNotification";
+	public const string SquareClickedNotification = "Board.SquareClickedNotification2";
 
-		
+	public int width = 5;
+	public int height = 5;
 
-	NotificationCentre2 notificationCentre = new NotificationCentre2();
 
 	[SerializeField] ArmySpawner USArmySpawner;
 	[SerializeField] ArmySpawner CONArmySpawner;
 		
 	// Use this for initialization
 	void Start () {
-		notificationCentre = GameObject.FindObjectOfType<NotificationCentre2> ();
-
+		
 	
 	}
 
@@ -34,16 +33,20 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 	}
 
 	void IPointerClickHandler.OnPointerClick(PointerEventData eventData){
+
+
 		Vector3 pos = eventData.pointerCurrentRaycast.worldPosition;
 		int x = Mathf.FloorToInt (pos.x);
 		int z = Mathf.FloorToInt (pos.z);
 
 		if (x < 0 || z < 0 || x > 2 || z > 2) {
+			Debug.Log ("IpoitnerClickHander says out of range at x = " + x + " and z = " + z);
 			return;
 		}
 
 		int index = z * 3 + x;
-		notificationCentre.PostNotification (SquareClickedNotification, index);
-	
+		EventManager.TriggerEvent (SquareClickedNotification, index); //need to transfer index somehow.
+
 	}
+
 }
