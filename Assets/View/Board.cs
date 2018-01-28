@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Lookout;
 using UnityEngine.EventSystems;
+using UnityEngine.Events;
+
 
 public class Board : MonoBehaviour, IPointerClickHandler	 {
 
@@ -15,18 +17,32 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 	[SerializeField] ArmySpawner USArmySpawner;
 	[SerializeField] ArmySpawner CONArmySpawner;
 		
-	// Use this for initialization
-	void Start () {
-		
-	
+	private Army[] armies;
+
+
+	private UnityAction<System.Object> didBeginGameNotificationAction;
+
+	void Awake(){
+
+		//LISTENERS
+		didBeginGameNotificationAction = new UnityAction<System.Object>(ClearAllArmies);
+
 	}
+
+	void OnEnable() {
+
+		EventManager.StartListening (Lookout.Game.DidEndGameNotification, didBeginGameNotificationAction);
+	}
+
+	void Start(){
+		armies = new Army[width * height];
+
+	}
+
 
 
 	public void Show(int[] coords, Mark mark){
 		ArmySpawner armySpawner = mark == Mark.CON ? CONArmySpawner : USArmySpawner;
-//
-//		int x = coords % 3;
-//		int z = coords / 3;
 
 		Vector3 location = new Vector3 (coords[0] + 0.5f, 0, coords[1] + 0.5f);
 		armySpawner.InstantiatePrefab (location);
@@ -44,7 +60,19 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 		}
 
 		int[] coords = new int[]{x, z};
-		EventManager.TriggerEvent (SquareClickedNotification, coords); //need to transfer index somehow.
+		EventManager.TriggerEvent (SquareClickedNotification, coords);
+
+	}
+
+	void ClearAllArmies(object args){
+		Army[] armies = GameObject.FindObjectsOfType<Army> ();
+
+		foreach (Army army in armies) {
+			Debug.Log ("army found");
+			Destroy (army.gameObject);
+		}
+
+		Debug.Log(" Clear all armies is called");
 
 	}
 

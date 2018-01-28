@@ -18,6 +18,7 @@ public class GameController : MonoBehaviour {
 		squareClickedNotificationAction = new UnityAction<System.Object> (OnBoardSquareClicked); //defines what action that this object should take when the event is triggered
 		didOccupySquareNotificationAction = new UnityAction<System.Object>(OnDidOccupySquare);
 		didBeginGameNotificationAction = new UnityAction<System.Object> (OnDidBeginGame);
+	
 	}
 
 	void Start(){
@@ -32,7 +33,7 @@ public class GameController : MonoBehaviour {
 		EventManager.StartListening(Board.SquareClickedNotification, squareClickedNotificationAction); 
 		EventManager.StartListening(Lookout.Game.DidBeginGameNotification, didBeginGameNotificationAction);
 		EventManager.StartListening(Lookout.Game.DidOccupySquareNotification, didOccupySquareNotificationAction);
-
+	
 	}
 
 	void OnDisable(){
@@ -53,7 +54,7 @@ public class GameController : MonoBehaviour {
 			string argsAsString = game.convertArrayToString ((int[])args);
 
 			game.Place(argsAsString);
-		
+
 		}
 		
 	}
@@ -73,7 +74,23 @@ public class GameController : MonoBehaviour {
 	}
 
 	void OnDidBeginGame(object args){
+		RefreshBoard ();
 		Debug.Log ("Did Begin Game");
 	
 	}
+
+	void RefreshBoard(){
+		foreach (KeyValuePair<string, Mark> keyValue in game.boardDictionary) {
+			string key = keyValue.Key;
+			Mark value = keyValue.Value;
+			int[] coords = game.convertStringToArray (key, 2);
+			Debug.Log (key + " , " + value);
+			if (value != Mark.None) {
+				board.Show (coords, value);
+			}
+
+		}
+
+	}
 }
+	

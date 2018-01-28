@@ -14,9 +14,8 @@ namespace Lookout
 
 
 
-
 	public class Game{
-
+		
 
 		public const string DidBeginGameNotification = "Game.DidBeginGameNotification";
 		public const string DidOccupySquareNotification = "Game.DidOccupySquareNotification";
@@ -74,6 +73,7 @@ namespace Lookout
 		
 			control = startPlayer;
 			winner = Mark.None;
+			InitialGameSetup ();
 			EventManager.TriggerEvent (DidBeginGameNotification);
 
 		}
@@ -132,6 +132,53 @@ namespace Lookout
 
 		}
 
+		void InitialGameSetup(){
+			//Deploys initial armies
+			int[][] USPossibleStartSquares = new int[][]{
+				new int[] {3, 0},
+				new int[] {3, 1},
+				new int[] {4, 1}
+
+			};
+
+			int[][] ConPossibleStartSquares = new int[][] {
+				new int[] { 0, 3 },
+				new int[] { 1, 3 },
+				new int[] { 1, 4 }
+
+			};
+
+			int x = Mathf.RoundToInt(Random.Range (0f, USPossibleStartSquares.Length));
+			int y = 0;
+			Debug.Log ("x is equal to:" + x);
+
+			foreach (int[] USStartSquare in USPossibleStartSquares) {
+				if (y != x) {
+					string coords = convertArrayToString (USStartSquare);
+					Mark mark = Mark.USA;
+					boardDictionary [coords] = mark;
+				}
+				y++;
+			}
+
+			y = 0;
+			x = Mathf.RoundToInt(Random.Range (0f, ConPossibleStartSquares.Length));
+
+			foreach (int[] CONStartSquare in ConPossibleStartSquares) {
+				if (y != x) {
+					string coords = convertArrayToString (CONStartSquare);
+					Mark mark = Mark.CON;
+					boardDictionary [coords] = mark;
+				}
+				y++;
+			}
+
+
+
+		}
+
+
+
 		public string convertArrayToString(int[] array){
 			string newString = "";
 
@@ -174,6 +221,8 @@ namespace Lookout
 
 			return coords;
 		}
+
+
 
 	}
 
