@@ -3,47 +3,77 @@ using System.Collections.Generic;
 using UnityEngine;
 using Lookout;
 using UnityEngine.EventSystems;
+using UnityEngine.Events;
+
 
 public class Board : MonoBehaviour, IPointerClickHandler	 {
 
-	public const string SquareClickedNotification = "Board.SquareClickedNotification";
+	public const string SquareClickedNotification = "Board.SquareClickedNotification2";
 
-		
+	public int width = 5;
+	public int height = 5;
 
-	NotificationCentre2 notificationCentre = new NotificationCentre2();
 
 	[SerializeField] ArmySpawner USArmySpawner;
 	[SerializeField] ArmySpawner CONArmySpawner;
 		
-	// Use this for initialization
-	void Start () {
-		notificationCentre = GameObject.FindObjectOfType<NotificationCentre2> ();
+	private Army[] armies;
 
-	
+
+	private UnityAction<System.Object> didBeginGameNotificationAction;
+
+	void Awake(){
+
+		//LISTENERS
+		didBeginGameNotificationAction = new UnityAction<System.Object>(ClearAllArmies);
+
+	}
+
+	void OnEnable() {
+
+		EventManager.StartListening (Lookout.Game.DidEndGameNotification, didBeginGameNotificationAction);
+	}
+
+	void Start(){
+		armies = new Army[width * height];
+
 	}
 
 
-	public void Show(int index, Mark mark){
+
+	public void Show(int[] coords, Mark mark){
 		ArmySpawner armySpawner = mark == Mark.CON ? CONArmySpawner : USArmySpawner;
 
-		int x = index % 3;
-		int z = index / 3;
-
-		Vector3 location = new Vector3 (x + 0.5f, 0, z+ 0.5f);
+		Vector3 location = new Vector3 (coords[0] + 0.5f, 0, coords[1] + 0.5f);
 		armySpawner.InstantiatePrefab (location);
 	}
 
 	void IPointerClickHandler.OnPointerClick(PointerEventData eventData){
+
+
 		Vector3 pos = eventData.pointerCurrentRaycast.worldPosition;
 		int x = Mathf.FloorToInt (pos.x);
 		int z = Mathf.FloorToInt (pos.z);
 
-		if (x < 0 || z < 0 || x > 2 || z > 2) {
+		if (x < 0 || z < 0 || x > width || z > height) {
 			return;
 		}
 
-		int index = z * 3 + x;
-		notificationCentre.PostNotification (SquareClickedNotification, index);
-	
+		int[] coords = new int[]{x, z};
+		EventManager.TriggerEvent (SquareClickedNotification, coords);
+
 	}
+
+	void ClearAllArmies(object args){
+		Army[] armies = GameObject.FindObjectsOfType<Army> ();
+
+		foreach (Army army in armies) {
+			Debug.Log ("army found");
+			Destroy (army.gameObject);
+		}
+
+		Debug.Log(" Clear all armies is called");
+
+	}
+
 }
