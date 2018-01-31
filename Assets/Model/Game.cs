@@ -13,6 +13,11 @@ namespace Lookout
 	}
 
 
+/// <summary>
+/// what we want is essentially 3 options
+
+	/// </summary>
+
 
 	public class Game{
 		
@@ -29,8 +34,12 @@ namespace Lookout
 
 		private int boardSize;
 		private Board boardView;
-		public Dictionary <string, Mark> boardDictionary;
+	//	public Dictionary <string, Mark> boardDictionary;
 
+		public Dictionary<string, Unit> unitDictionary;
+		
+
+		//public Dictionary<string, Dictionary< Mark, Unit>> unitDictionary = new Dictionary<string, Dictionary<Mark, Unit>>();
 
 		string[] wins = new string[] {
 			"0,4", "4,0"
@@ -41,35 +50,42 @@ namespace Lookout
 			boardView = GameObject.FindObjectOfType<Board> ();
 			boardSize = boardView.height * boardView.width;
 
-
 		}
 
 		public Game (){
-			if (boardDictionary == null) {
-				boardDictionary = new Dictionary<string, Mark> ();
+//			if (boardDictionary == null) {
+//				boardDictionary = new Dictionary<string, Mark> ();
+//			
+//			}
+
+			if (unitDictionary == null) {
 			
+				unitDictionary = new Dictionary<string, Unit> ();
 			}
-
-
-
-			//board = new Mark[25];
 
 		}
 
 		public void Reset(){
 			Debug.Log ("Reset is called");	
-			boardDictionary.Clear ();
+			//boardDictionary.Clear ();
+			unitDictionary.Clear ();
 
 			for (int z = 0; z < 5; z++) {
 				for (int x = 0; x < 5; x++) {
 					int[] coord = new int[]{x, z};
 
 					string coordAsString = convertArrayToString(coord);
-					boardDictionary.Add (coordAsString, Mark.None);
+					//boardDictionary.Add (coordAsString, Mark.None);
+
+					Unit newUnit = new Unit ();
+					newUnit.allegiance = Mark.None;
+					newUnit.unit_type = Unit.UnitType.None;
+
+					unitDictionary.Add (coordAsString, newUnit);
+									
 				}
 
 			}
-
 		
 			control = startPlayer;
 			winner = Mark.None;
@@ -80,15 +96,16 @@ namespace Lookout
 
 		public void Place (string coords){
 			
-			Mark markAtThisCoord = boardDictionary [coords];
-
+//			Mark markAtThisCoord = boardDictionary [coords];
+			Mark markAtThisCoord = unitDictionary [coords].allegiance;
 			if (markAtThisCoord != Mark.None) {
 				return;
 			
 			}
 
-			boardDictionary [coords] = control;
+			//boardDictionary [coords] = control;
 
+			unitDictionary [coords].allegiance = control;
 			EventManager.TriggerEvent (DidOccupySquareNotification, coords);
 
 			CheckForGameOver();
@@ -119,9 +136,13 @@ namespace Lookout
 		}
 
 		bool CheckForWin(){
-			
-			Mark a = boardDictionary [wins [0]];
-			Mark b = boardDictionary [wins [1]];
+
+//						
+//			Mark a = boardDictionary [wins [0]];
+//			Mark b = boardDictionary [wins [1]];
+
+			Mark a = unitDictionary[wins[0]].allegiance;
+			Mark b = unitDictionary[wins[1]].allegiance;
 
 			if (a == b && a != Mark.None) {
 				winner = a;
@@ -133,6 +154,8 @@ namespace Lookout
 		}
 
 		void InitialGameSetup(){
+			
+
 			//Deploys initial armies
 			int[][] USPossibleStartSquares = new int[][]{
 				new int[] {3, 0},
@@ -148,15 +171,14 @@ namespace Lookout
 
 			};
 
-			int x = Mathf.RoundToInt(Random.Range (0f, USPossibleStartSquares.Length));
+			int x = RandomIntCreator (0f, USPossibleStartSquares.Length);
 			int y = 0;
-			Debug.Log ("x is equal to:" + x);
 
 			foreach (int[] USStartSquare in USPossibleStartSquares) {
+				
 				if (y != x) {
-					string coords = convertArrayToString (USStartSquare);
-					Mark mark = Mark.USA;
-					boardDictionary [coords] = mark;
+
+					ConstructNewUnit (USStartSquare, Mark.USA, Unit.UnitType.Army);
 				}
 				y++;
 			}
@@ -166,15 +188,34 @@ namespace Lookout
 
 			foreach (int[] CONStartSquare in ConPossibleStartSquares) {
 				if (y != x) {
-					string coords = convertArrayToString (CONStartSquare);
-					Mark mark = Mark.CON;
-					boardDictionary [coords] = mark;
+					ConstructNewUnit (CONStartSquare, Mark.CON, Unit.UnitType.Army);
 				}
 				y++;
 			}
 
+			//FORTRESSES
+			int[] USFortress = new int[] {4, 0}; 
+			int[] CONFortress = new int[]{ 0, 4 };
+
+			ConstructNewUnit (USFortress, Mark.USA, Unit.UnitType.Fortress);
+			ConstructNewUnit (CONFortress, Mark.CON, Unit.UnitType.Fortress);
 
 
+		}
+
+		private void ConstructNewUnit(int[] intCoords, Mark allegiance, Unit.UnitType unitType){
+
+			float minStrength = 0f;
+			float maxStrength = 5000f;
+
+			int strength = RandomIntCreator (minStrength, maxStrength);
+			Unit newUnit = new Unit();
+			newUnit.allegiance = allegiance;
+			newUnit.unit_type = unitType;
+			newUnit.strength = strength;
+			unitDictionary [convertArrayToString (intCoords)] = newUnit;
+
+		
 		}
 
 
@@ -223,8 +264,15 @@ namespace Lookout
 		}
 
 
+		private int RandomIntCreator(float min, float max){
+			int strength = Mathf.RoundToInt (Random.Range (min, max));
+			return strength;
+		}
+
+
 
 	}
+		
 
 
 

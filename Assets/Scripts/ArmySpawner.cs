@@ -4,7 +4,10 @@ using UnityEngine;
 
 public class ArmySpawner : MonoBehaviour {
 
-	public GameObject  ArmyPrefab;
+	public GameObject ArmyPrefab;
+	public GameObject FortressPrefab;
+	public GameObject SpyPrefab;
+
 	public int NumPrepopulate;
 	public int MaxNum;
 
@@ -14,12 +17,30 @@ public class ArmySpawner : MonoBehaviour {
 
 
 
-	public void InstantiatePrefab(Vector3 location){
-		Transform parent = this.transform;
+	public void InstantiatePrefab(Vector3 location, Unit unit){
+		GameObject gameObject;
 
-		Instantiate (ArmyPrefab, location, Quaternion.identity, parent);
+		if (unit.unit_type == Unit.UnitType.Army) {
+			gameObject = ArmyPrefab;
+		} else if (unit.unit_type == Unit.UnitType.Fortress) {
+			gameObject = FortressPrefab;
+		} else if (unit.unit_type == Unit.UnitType.Spy) {
+			gameObject = SpyPrefab;
+		} else {
+			gameObject = ArmyPrefab;
+		}
+
+	Transform parent = this.transform;
+
+		GameObject newUnit = Instantiate (gameObject, location, Quaternion.identity, parent);
+
+		newUnit.AddComponent<Unit> ();
+		newUnit.GetComponent<Unit> ().allegiance = unit.allegiance;
+		newUnit.GetComponent<Unit> ().unit_type = unit.unit_type;
+		newUnit.GetComponent<Unit> ().strength = unit.strength;
 
 	}
+
 
 
 //

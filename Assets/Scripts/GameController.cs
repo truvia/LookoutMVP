@@ -67,9 +67,11 @@ public class GameController : MonoBehaviour {
 		int[] coords = game.convertStringToArray (coordsAsString, 2);
 
 
-		Mark mark = game.boardDictionary [coordsAsString];
+//		Mark mark = game.boardDictionary [coordsAsString];
+		Mark mark = game.unitDictionary[coordsAsString].allegiance;
+		Unit unit = game.unitDictionary [coordsAsString];
 
-		board.Show (coords, mark);
+		board.Show (coords, mark, unit);
 	
 	}
 
@@ -80,16 +82,21 @@ public class GameController : MonoBehaviour {
 	}
 
 	void RefreshBoard(){
-		foreach (KeyValuePair<string, Mark> keyValue in game.boardDictionary) {
+		foreach(KeyValuePair<string, Unit> keyValue in game.unitDictionary){
 			string key = keyValue.Key;
-			Mark value = keyValue.Value;
-			int[] coords = game.convertStringToArray (key, 2);
-			Debug.Log (key + " , " + value);
-			if (value != Mark.None) {
-				board.Show (coords, value);
+			Unit value = keyValue.Value;
+
+			int[] coords = game.convertStringToArray(key, 2);
+
+			if (value.allegiance != Mark.None) {
+				board.Show (coords, value.allegiance, value);
+			
 			}
 
+
 		}
+
+
 
 	}
 }

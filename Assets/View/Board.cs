@@ -37,15 +37,17 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 	void Start(){
 		armies = new Army[width * height];
 
+
+
 	}
 
 
 
-	public void Show(int[] coords, Mark mark){
+	public void Show(int[] coords, Mark mark, Unit unit){
 		ArmySpawner armySpawner = mark == Mark.CON ? CONArmySpawner : USArmySpawner;
 
 		Vector3 location = new Vector3 (coords[0] + 0.5f, 0, coords[1] + 0.5f);
-		armySpawner.InstantiatePrefab (location);
+		armySpawner.InstantiatePrefab (location, unit);
 	}
 
 	void IPointerClickHandler.OnPointerClick(PointerEventData eventData){
@@ -68,7 +70,6 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 		Army[] armies = GameObject.FindObjectsOfType<Army> ();
 
 		foreach (Army army in armies) {
-			Debug.Log ("army found");
 			Destroy (army.gameObject);
 		}
 
