@@ -40,12 +40,6 @@ namespace Lookout
 			"0,4", "4,0"
 		};
 
-		void Start(){
-
-
-
-		}
-
 		public Game (){
 
 			if (unitDictionary == null) {
@@ -95,7 +89,7 @@ namespace Lookout
 			//no instance of boardview as it can never be loaded. selected coords now stored in game which is a bit weird but we can change that later.
 			unitDictionary [selectedCoords].allegiance = control;
 
-			Debug.Log ("Game.Place says" + coords + " , " + selectedCoords);
+		
 			unitDictionary [coords] = unitDictionary [selectedCoords];				
 
 			//unitDictionary [selectedCoords] = null;
@@ -114,7 +108,7 @@ namespace Lookout
 		
 
 
-		void ChangeTurn(){
+		public void ChangeTurn(){
 
 			Debug.Log ("ChangeTurn called");
 			control = (control == Mark.CON) ? Mark.USA : Mark.CON;
@@ -122,7 +116,7 @@ namespace Lookout
 
 		}
 
-		void CheckForGameOver(){
+		public void CheckForGameOver(){
 
 			if (CheckForWin ()) {
 				Debug.Log ("Check for win is true");
@@ -149,9 +143,24 @@ namespace Lookout
 
 		}
 
-		void DoBattle(){
+		public bool DoBattle(string defendercoorrds){
+			string attackercoords = selectedCoords;
+			bool AttackerWin = false;
+			Debug.Log ("attacker strength is " + unitDictionary [attackercoords].strength + " defender strength is " + unitDictionary [defendercoorrds].strength);
+
+			if (unitDictionary [attackercoords].strength > unitDictionary [defendercoorrds].strength) {
+				Debug.Log ("so attacker wins");
+				AttackerWin = true;
+			}
+			Debug.Log (AttackerWin);	
+			return AttackerWin;
 		
-		
+		}
+
+		public void KillUnit(string unitCoords){
+			
+			ConstructNewUnit(convertStringToArray(unitCoords, 2), Mark.None, Unit.UnitType.None);
+
 		}
 
 		void InitialGameSetup(){

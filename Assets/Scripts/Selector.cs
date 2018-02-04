@@ -5,7 +5,7 @@ using System.Linq;
 
 public class Selector : MonoBehaviour {
 
-	public GameObject hoverpiece;
+
 	public GameObject selectedPiece;
 	private bool anObjectSelected = false;
 	private GameController gameController;
@@ -18,36 +18,37 @@ public class Selector : MonoBehaviour {
 		board = FindObjectOfType<Board> ();
 	}
 
-	// Use this for initialization
-	void OnMouseDown(){
-		//if no piece is selected
-		if (!anObjectSelected) {
+//	// Use this for initialization
+//	void OnMouseDown(){
+//		//if no piece is selected
+//		if (!anObjectSelected) {
+//
+//			//pick up the piece currently being hovered over (as long as it is your piece)
+//			if (!anObjectSelected && gameController.game.control == Lookout.Mark.CON && hoverpiece.GetComponent<Unit> ().allegiance == Lookout.Mark.CON || !anObjectSelected && gameController.game.control == Lookout.Mark.USA && hoverpiece.GetComponent<Unit> ().allegiance == Lookout.Mark.USA) {
+//
+//				selectedPiece = hoverpiece;
+//				selectedPiece.transform.SetParent (transform);
+//				transform.rotation = Quaternion.identity;
+//				anObjectSelected = true;
+//
+//			} 
+//		}
+//			
+//		else if (anObjectSelected) {
+//			int[] coords = new int[]{
+//				Mathf.FloorToInt(this.transform.position.x),
+//				Mathf.FloorToInt(this.transform.position.z)
+//			};
+//
+//			if (!board.possibleMovementCoords.Any(p => p.SequenceEqual(coords))) {
+//				board.ClearAllSelectorSquares ();
+//				ReturnPieceToOriginalPosition ();
+//			}
+//				
+//
+//		}
+//	}
 
-			//pick up the piece currently being hovered over (as long as it is your piece)
-			if (!anObjectSelected && gameController.game.control == Lookout.Mark.CON && hoverpiece.GetComponent<Unit> ().allegiance == Lookout.Mark.CON || !anObjectSelected && gameController.game.control == Lookout.Mark.USA && hoverpiece.GetComponent<Unit> ().allegiance == Lookout.Mark.USA) {
-
-				selectedPiece = hoverpiece;
-				selectedPiece.transform.SetParent (transform);
-				transform.rotation = Quaternion.identity;
-				anObjectSelected = true;
-
-			} 
-		}
-			
-		else if (anObjectSelected) {
-			int[] coords = new int[]{
-				Mathf.FloorToInt(this.transform.position.x),
-				Mathf.FloorToInt(this.transform.position.z)
-			};
-
-			if (!board.possibleMovementCoords.Any(p => p.SequenceEqual(coords))) {
-				board.ClearAllSelectorSquares ();
-				ReturnPieceToOriginalPosition ();
-			}
-				
-
-		}
-	}
 
 	public void ReturnPieceToOriginalPosition(){
 		Debug.Log ("return to initial position called");
@@ -69,27 +70,25 @@ public class Selector : MonoBehaviour {
 	}
 
 	void OnTriggerEnter(Collider collider){
-		Debug.Log ("on trigger enter");
-		if (collider.GetComponent<Unit> ()) {
+		if (collider.GetComponent<Unit>() && collider.GetComponent<Unit>().allegiance == gameController.game.control) {
 
 			if (!anObjectSelected) {
 				originalParent = collider.gameObject.transform.parent.gameObject;
 				originalPosition = collider.gameObject.transform.position;
-				hoverpiece = collider.gameObject;
+				selectedPiece = collider.gameObject;
 			}
 
 		}
 	}
 
-	void OnTriggerExit(Collider collider){
-		if (collider.GetComponent<Unit> () && !anObjectSelected) {
-			print ("called");
-			hoverpiece = null;
-			originalParent = null;
-			originalPosition = transform.position;
-
-		}
-	}
+//	void OnTriggerExit(Collider collider){
+//		if (collider.GetComponent<Unit> () && !anObjectSelected) {
+//			selectedPiece = null;
+//			originalParent = null;
+//			originalPosition = transform.position;
+//
+//		}
+//	}
 
 
 	public void PlacePiece(){
@@ -100,6 +99,11 @@ public class Selector : MonoBehaviour {
 
 		selectedPiece = null;
 		DeselectPiece ();
+	}
+
+	public void KillSelectedPiece(){
+		Destroy (selectedPiece);
+
 	}
 
 }

@@ -18,19 +18,14 @@ public class Unit: MonoBehaviour {
 	public int strength = 5000;
 
 		
-		public class Army2{
-			
 
 
-			public int strength = 100;	
+	public class Fortress:Unit{
+		int strength = 5000;
 		}
 
-		public class Fortress{
-			public const int strength = 1000;
-		}
-
-		public class Spy{
-			public const int strength = 1;
+	public class Spy:Unit{
+		int strength = 5000;
 
 		}
 

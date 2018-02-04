@@ -15,6 +15,7 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 	public GameObject redSelectorPrefab;
 	public GameObject selectorSpawner;
 	public List<int[]> possibleMovementCoords = new List<int[]> ();
+	public List<int[]> battleSquareCoords = new List<int[]> ();
 
 	[SerializeField] ArmySpawner USArmySpawner;
 	[SerializeField] ArmySpawner CONArmySpawner;
@@ -22,6 +23,7 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 	private Army[] armies;
 	private GameController gameController;
 	private UnityAction<System.Object> didBeginGameNotificationAction;
+
 
 
 	void Awake(){
@@ -112,6 +114,7 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 						selector = redSelectorPrefab;
 						Instantiate (selector, selectorCoord, Quaternion.identity, parent); 
 						possibleMovementCoords.Add (newCoords);
+						battleSquareCoords.Add (newCoords);
 					
 					}
 						
@@ -134,8 +137,6 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 		int[] squareToMoveFrom = gameController.game.convertStringToArray(gameController.game.selectedCoords, 2);
 
 
-
-
 	}
 
 	public void ClearAllSelectorSquares(){
@@ -146,4 +147,6 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 		}
 
 	}
+
+
 }

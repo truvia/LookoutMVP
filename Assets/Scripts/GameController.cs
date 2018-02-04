@@ -15,6 +15,8 @@ public class GameController : MonoBehaviour {
 	private UnityAction<System.Object> didBeginGameNotificationAction;
 	private Selector selector;
 
+
+
 	void Awake(){
 		//Listeners - what methods should listen to the notification
 		squareClickedNotificationAction = new UnityAction<System.Object> (OnBoardSquareClicked); //defines what action that this object should take when the event is triggered
@@ -27,6 +29,7 @@ public class GameController : MonoBehaviour {
 		selector = FindObjectOfType<Selector> ();
 		board = GetComponentInChildren<Board> ();
 		game.Reset ();
+
 
 	}
 
@@ -53,12 +56,35 @@ public class GameController : MonoBehaviour {
 		//if we have clicked on a selected square
 
 		if(board.possibleMovementCoords.Any(p => p.SequenceEqual(coordsAsInt))){
-			selector.PlacePiece ();
+			//first check if it is in a moveable square
 
-			game.Place (coords);
-	
+			if (board.battleSquareCoords.Any (p => p.SequenceEqual (coordsAsInt))) {
+				//if it is a battle square, do battle
+				bool battleWon = game.DoBattle (coords); 
+
+				if (battleWon) {
+					selector.PlacePiece ();
+					game.KillUnit (coords);
+					game.Place (coords);
+					RefreshBoard ();
+
+				} else {
+					game.KillUnit (game.selectedCoords);
+					selector.KillSelectedPiece ();
+					game.CheckForGameOver ();
+					game.ChangeTurn ();
+
+				}
+			
+			} else {
+				selector.PlacePiece ();
+				game.Place (coords);
+			}
+
+
 
 			board.possibleMovementCoords.Clear ();
+			board.battleSquareCoords.Clear ();
 		}
 
 		board.ClearAllSelectorSquares ();
@@ -79,11 +105,6 @@ public class GameController : MonoBehaviour {
 		
 
 		}
-
-		
-
-
-
 			//game.Place(coords);
 
 		}
@@ -99,6 +120,13 @@ public class GameController : MonoBehaviour {
 	}
 
 	void RefreshBoard(){
+		Unit[] units =	GetComponentsInChildren<Unit> ();
+
+		foreach (Unit unit in units) {
+			Destroy (unit.gameObject);
+		
+		}
+
 		foreach(KeyValuePair<string, Unit> keyValue in game.unitDictionary){
 			string key = keyValue.Key;
 			Unit value = keyValue.Value;
