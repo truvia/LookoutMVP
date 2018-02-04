@@ -13,11 +13,6 @@ namespace Lookout
 	}
 
 
-/// <summary>
-/// what we want is essentially 3 options
-
-	/// </summary>
-
 
 	public class Game{
 		
@@ -31,9 +26,9 @@ namespace Lookout
 		public Mark winner {get; private set;}
 		public Mark[] board {get; private set;}
 		public Mark startPlayer = Mark.CON; //sets start player as the Confederates
+		public string selectedCoords;
 
-		private int boardSize;
-		private Board boardView;
+
 	//	public Dictionary <string, Mark> boardDictionary;
 
 		public Dictionary<string, Unit> unitDictionary;
@@ -46,17 +41,12 @@ namespace Lookout
 		};
 
 		void Start(){
-		
-			boardView = GameObject.FindObjectOfType<Board> ();
-			boardSize = boardView.height * boardView.width;
+
+
 
 		}
 
 		public Game (){
-//			if (boardDictionary == null) {
-//				boardDictionary = new Dictionary<string, Mark> ();
-//			
-//			}
 
 			if (unitDictionary == null) {
 			
@@ -95,17 +85,23 @@ namespace Lookout
 		}
 
 		public void Place (string coords){
-			
-//			Mark markAtThisCoord = boardDictionary [coords];
+
 			Mark markAtThisCoord = unitDictionary [coords].allegiance;
 			if (markAtThisCoord != Mark.None) {
 				return;
 			
 			}
 
-			//boardDictionary [coords] = control;
+			//no instance of boardview as it can never be loaded. selected coords now stored in game which is a bit weird but we can change that later.
+			unitDictionary [selectedCoords].allegiance = control;
 
-			unitDictionary [coords].allegiance = control;
+			Debug.Log ("Game.Place says" + coords + " , " + selectedCoords);
+			unitDictionary [coords] = unitDictionary [selectedCoords];				
+
+			//unitDictionary [selectedCoords] = null;
+			ConstructNewUnit (convertStringToArray (selectedCoords, 2), Mark.None, Unit.UnitType.None);
+
+
 			EventManager.TriggerEvent (DidOccupySquareNotification, coords);
 
 			CheckForGameOver();
@@ -153,6 +149,11 @@ namespace Lookout
 
 		}
 
+		void DoBattle(){
+		
+		
+		}
+
 		void InitialGameSetup(){
 			
 
@@ -177,14 +178,16 @@ namespace Lookout
 			foreach (int[] USStartSquare in USPossibleStartSquares) {
 				
 				if (y != x) {
-
+					
 					ConstructNewUnit (USStartSquare, Mark.USA, Unit.UnitType.Army);
+				
 				}
+
 				y++;
 			}
 
 			y = 0;
-			x = Mathf.RoundToInt(Random.Range (0f, ConPossibleStartSquares.Length));
+			x = RandomIntCreator (0f, ConPossibleStartSquares.Length);
 
 			foreach (int[] CONStartSquare in ConPossibleStartSquares) {
 				if (y != x) {

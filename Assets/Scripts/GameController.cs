@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Lookout;
 using UnityEngine.Events;
+using System.Linq;
 
 public class GameController : MonoBehaviour {
 
@@ -12,16 +13,18 @@ public class GameController : MonoBehaviour {
 	private UnityAction<System.Object> squareClickedNotificationAction;
 	private UnityAction<System.Object> didOccupySquareNotificationAction;
 	private UnityAction<System.Object> didBeginGameNotificationAction;
+	private Selector selector;
 
 	void Awake(){
 		//Listeners - what methods should listen to the notification
 		squareClickedNotificationAction = new UnityAction<System.Object> (OnBoardSquareClicked); //defines what action that this object should take when the event is triggered
-		didOccupySquareNotificationAction = new UnityAction<System.Object>(OnDidOccupySquare);
+		//didOccupySquareNotificationAction = new UnityAction<System.Object>(OnDidOccupySquare);
 		didBeginGameNotificationAction = new UnityAction<System.Object> (OnDidBeginGame);
 	
 	}
 
 	void Start(){
+		selector = FindObjectOfType<Selector> ();
 		board = GetComponentInChildren<Board> ();
 		game.Reset ();
 
@@ -32,48 +35,62 @@ public class GameController : MonoBehaviour {
 		//GameController is listening to the following: 
 		EventManager.StartListening(Board.SquareClickedNotification, squareClickedNotificationAction); 
 		EventManager.StartListening(Lookout.Game.DidBeginGameNotification, didBeginGameNotificationAction);
-		EventManager.StartListening(Lookout.Game.DidOccupySquareNotification, didOccupySquareNotificationAction);
+		//EventManager.StartListening(Lookout.Game.DidOccupySquareNotification, didOccupySquareNotificationAction);
 	
 	}
 
 	void OnDisable(){
 		EventManager.StopListening(Board.SquareClickedNotification, squareClickedNotificationAction); 
 		EventManager.StopListening(Lookout.Game.DidBeginGameNotification, didBeginGameNotificationAction);
-		EventManager.StopListening(Lookout.Game.DidOccupySquareNotification, didOccupySquareNotificationAction);
+	//	EventManager.StopListening(Lookout.Game.DidOccupySquareNotification, didOccupySquareNotificationAction);
 	}
 
 
 
 	void OnBoardSquareClicked(object args){
+		int[] coordsAsInt = (int[])args;
+		string coords = game.convertArrayToString ((int[])args);
+		//if we have clicked on a selected square
+
+		if(board.possibleMovementCoords.Any(p => p.SequenceEqual(coordsAsInt))){
+			selector.PlacePiece ();
+
+			game.Place (coords);
+	
+
+			board.possibleMovementCoords.Clear ();
+		}
+
+		board.ClearAllSelectorSquares ();
 		if (game.control == Lookout.Mark.None) {
 			Debug.Log ("Nobody is in control so reset game");
+
 			game.Reset ();
 
 		} else {
 			
-			string argsAsString = game.convertArrayToString ((int[])args);
+		//is there an object at this location;
 
-			game.Place(argsAsString);
+			if (game.unitDictionary [coords].allegiance != Mark.None && game.unitDictionary[coords].allegiance == game.control) {
+			//I have clicked on my unit
+				game.selectedCoords = coords;
+			
+			board.ShowPossibleSquares (coordsAsInt, game.unitDictionary[coords]);
+		
+
+		}
+
+		
+
+
+
+			//game.Place(coords);
 
 		}
 		
 	}
 
-	void OnDidOccupySquare(object args){
-	
-		string coordsAsString = args.ToString ();
 
-	
-		int[] coords = game.convertStringToArray (coordsAsString, 2);
-
-
-//		Mark mark = game.boardDictionary [coordsAsString];
-		Mark mark = game.unitDictionary[coordsAsString].allegiance;
-		Unit unit = game.unitDictionary [coordsAsString];
-
-		board.Show (coords, mark, unit);
-	
-	}
 
 	void OnDidBeginGame(object args){
 		RefreshBoard ();
