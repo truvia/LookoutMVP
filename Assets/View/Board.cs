@@ -4,6 +4,7 @@ using UnityEngine;
 using Lookout;
 using UnityEngine.EventSystems;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 
 public class Board : MonoBehaviour, IPointerClickHandler	 {
@@ -16,6 +17,7 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 	public GameObject selectorSpawner;
 	public List<int[]> possibleMovementCoords = new List<int[]> ();
 	public List<int[]> battleSquareCoords = new List<int[]> ();
+	public Text unitStrengthText;
 
 	[SerializeField] ArmySpawner USArmySpawner;
 	[SerializeField] ArmySpawner CONArmySpawner;
@@ -98,7 +100,7 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 
 					int[] newCoords = new int[]{coords[0] + x, coords[1] + z };
 
-					string coordsAsString = gameController.game.convertArrayToString (newCoords);
+					string coordsAsString = Game.convertArrayToString (newCoords);
 
 					if (selectorCoord.x < 0.5f || selectorCoord.z < 0.5f || selectorCoord.x > width || selectorCoord.z > height 
 						|| gameController.game.unitDictionary [coordsAsString].allegiance == unit.allegiance) {
@@ -117,11 +119,7 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 						battleSquareCoords.Add (newCoords);
 					
 					}
-						
-
-
-
-				
+								
 				
 				}
 
@@ -146,6 +144,16 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 
 		}
 
+	}
+
+	public void ChangeText(int unitStrength){
+		
+		unitStrengthText.text = unitStrength.ToString ();
+
+	}
+
+	public void RevertStrengthText(){
+		unitStrengthText.text = "Unit Strength";
 	}
 
 

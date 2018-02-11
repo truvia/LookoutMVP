@@ -11,11 +11,11 @@ public class Selector : MonoBehaviour {
 	private GameController gameController;
 	private GameObject originalParent;
 	private Vector3 originalPosition;
-	private Board board;
+	//private Board board;
 
 	void Start(){
 		gameController = FindObjectOfType<GameController> ();
-		board = FindObjectOfType<Board> ();
+	//	board = FindObjectOfType<Board> ();
 	}
 
 //	// Use this for initialization
@@ -51,7 +51,7 @@ public class Selector : MonoBehaviour {
 
 
 	public void ReturnPieceToOriginalPosition(){
-		Debug.Log ("return to initial position called");
+		//Debug.Log ("return to initial position called");
 		if (selectedPiece) {
 			selectedPiece.transform.position = originalPosition;
 			selectedPiece.transform.SetParent (originalParent.transform);
@@ -91,15 +91,15 @@ public class Selector : MonoBehaviour {
 //	}
 
 
-	public void PlacePiece(){
-
-		Vector3 newVector3 = new Vector3 (this.transform.position.x, 0.05f, this.transform.position.z);
-		selectedPiece.transform.SetParent (originalParent.transform);
-		selectedPiece.transform.position = newVector3;
-
-		selectedPiece = null;
-		DeselectPiece ();
-	}
+//	public void PlacePiece(){
+//
+//		Vector3 newVector3 = new Vector3 (this.transform.position.x, 0.05f, this.transform.position.z);
+//		selectedPiece.transform.SetParent (originalParent.transform);
+//		selectedPiece.transform.position = newVector3;
+//
+//		selectedPiece = null;
+//		DeselectPiece ();
+//	}
 
 	public void KillSelectedPiece(){
 		Destroy (selectedPiece);

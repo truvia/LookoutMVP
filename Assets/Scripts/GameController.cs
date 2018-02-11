@@ -52,7 +52,7 @@ public class GameController : MonoBehaviour {
 
 	void OnBoardSquareClicked(object args){
 		int[] coordsAsInt = (int[])args;
-		string coords = game.convertArrayToString ((int[])args);
+		string coords = Game.convertArrayToString ((int[])args);
 		//if we have clicked on a selected square
 
 		if(board.possibleMovementCoords.Any(p => p.SequenceEqual(coordsAsInt))){
@@ -63,13 +63,12 @@ public class GameController : MonoBehaviour {
 				bool battleWon = game.DoBattle (coords); 
 
 				if (battleWon) {
-					selector.PlacePiece ();
-					game.KillUnit (coords);
+					game.WipeUnit (coords);
 					game.Place (coords);
 					RefreshBoard ();
 
 				} else {
-					game.KillUnit (game.selectedCoords);
+					game.WipeUnit (game.selectedCoords);
 					selector.KillSelectedPiece ();
 					game.CheckForGameOver ();
 					game.ChangeTurn ();
@@ -77,8 +76,8 @@ public class GameController : MonoBehaviour {
 				}
 			
 			} else {
-				selector.PlacePiece ();
 				game.Place (coords);
+				RefreshBoard ();
 			}
 
 
@@ -100,6 +99,7 @@ public class GameController : MonoBehaviour {
 			if (game.unitDictionary [coords].allegiance != Mark.None && game.unitDictionary[coords].allegiance == game.control) {
 			//I have clicked on my unit
 				game.selectedCoords = coords;
+				board.ChangeText (game.unitDictionary [coords].strength);
 			
 			board.ShowPossibleSquares (coordsAsInt, game.unitDictionary[coords]);
 		
@@ -125,7 +125,7 @@ public class GameController : MonoBehaviour {
 		foreach (Unit unit in units) {
 			Destroy (unit.gameObject);
 		
-		}
+		}	
 
 		foreach(KeyValuePair<string, Unit> keyValue in game.unitDictionary){
 			string key = keyValue.Key;
@@ -140,6 +140,8 @@ public class GameController : MonoBehaviour {
 
 
 		}
+
+		board.RevertStrengthText ();
 
 
 

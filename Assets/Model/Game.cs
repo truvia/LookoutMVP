@@ -51,7 +51,6 @@ namespace Lookout
 
 		public void Reset(){
 			Debug.Log ("Reset is called");	
-			//boardDictionary.Clear ();
 			unitDictionary.Clear ();
 
 			for (int z = 0; z < 5; z++) {
@@ -86,13 +85,9 @@ namespace Lookout
 			
 			}
 
-			//no instance of boardview as it can never be loaded. selected coords now stored in game which is a bit weird but we can change that later.
 			unitDictionary [selectedCoords].allegiance = control;
-
-		
 			unitDictionary [coords] = unitDictionary [selectedCoords];				
 
-			//unitDictionary [selectedCoords] = null;
 			ConstructNewUnit (convertStringToArray (selectedCoords, 2), Mark.None, Unit.UnitType.None);
 
 
@@ -100,7 +95,7 @@ namespace Lookout
 
 			CheckForGameOver();
 
-			if(control != Mark.None){
+			if(control != Mark.None && AreThereAnyEnemyArmiesLeft()){
 				ChangeTurn();
 			
 			}
@@ -126,11 +121,6 @@ namespace Lookout
 		}
 
 		bool CheckForWin(){
-
-//						
-//			Mark a = boardDictionary [wins [0]];
-//			Mark b = boardDictionary [wins [1]];
-
 			Mark a = unitDictionary[wins[0]].allegiance;
 			Mark b = unitDictionary[wins[1]].allegiance;
 
@@ -143,25 +133,91 @@ namespace Lookout
 
 		}
 
+		bool AreThereAnyEnemyArmiesLeft (){
+			foreach (KeyValuePair<string, Unit> keyValue in unitDictionary) {
+				string key = keyValue.Key;
+				Unit value = keyValue.Value;
+
+				if (value.allegiance != control && value.allegiance != Mark.None && value.unit_type != Unit.UnitType.Fortress) {
+					//Debug.Log ("enemy army found " + value.allegiance + " , " + value.unit_type);
+					return true;
+				}		
+
+			}
+			return false;
+		}
+
 		public bool DoBattle(string defendercoorrds){
 			string attackercoords = selectedCoords;
 			bool AttackerWin = false;
-			Debug.Log ("attacker strength is " + unitDictionary [attackercoords].strength + " defender strength is " + unitDictionary [defendercoorrds].strength);
+			//Debug.Log ("attacker strength is " + unitDictionary [attackercoords].strength + " defender strength is " + unitDictionary [defendercoorrds].strength);
 
-			if (unitDictionary [attackercoords].strength > unitDictionary [defendercoorrds].strength) {
-				Debug.Log ("so attacker wins");
+			int actOfGodRandomizer = Mathf.FloorToInt (Random.Range (0f, 100f));
+
+
+			if (actOfGodRandomizer != 1) {
+
+				float attackAdvantageMultiplier = 1;
+				float defenceAdvantageMultiplier = 4 / 3;
+				float attackerStrength = unitDictionary[attackercoords].strength;
+				float defenderStrength = unitDictionary [defendercoorrds].strength;
+
+				float attackerOdds = 0.5f * (attackerStrength / defenderStrength) * attackAdvantageMultiplier;
+				float defenderOdds = 0.5f * (defenderStrength / attackerStrength) * defenceAdvantageMultiplier;
+
+				Debug.Log ("Attacker to defender strength ratio is " + attackerStrength + " : " + defenderStrength);
+				Debug.Log ("Attacker odds to defender odds is " + attackerOdds + " : " + defenderOdds);
+
+				if (attackerOdds > defenderOdds) {
+					float newFloat = defenderOdds / attackerOdds;
+					int newStrength = Mathf.RoundToInt(attackerStrength * (1 - newFloat));
+
+					Debug.Log ("attacker loss is " + (attackerStrength - newStrength));
+
+					unitDictionary[attackercoords].strength = newStrength;
+
+
+
+
+					AttackerWin = true;
+				} else {
+					float newFloat = attackerOdds / defenderOdds;
+					int newStrength = Mathf.RoundToInt(defenderStrength * (1 - newFloat));
+					Debug.Log ("defender loss is " + (defenderStrength - newStrength));
+
+					unitDictionary[defendercoorrds].strength = newStrength;
+								
+				
+				}
+			
+			} else {
 				AttackerWin = true;
 			}
-			Debug.Log (AttackerWin);	
+
+
+//			if (unitDictionary [attackercoords].strength > unitDictionary [defendercoorrds].strength) {
+//				float unitStrength = unitDictionary [attackercoords].strength;
+//
+//			//	unitDictionary [attackercoords].strength = Mathf.RoundToInt (unitStrength * attackerLossRandomizer);
+//				AttackerWin = true;
+//
+//			} else {
+//				float unitStrength = unitDictionary [defendercoorrds].strength;
+//				//unitDictionary [defendercoorrds].strength = Mathf.RoundToInt (unitStrength * defenderLossRandomizer);
+//			}
+
+
 			return AttackerWin;
 		
 		}
 
-		public void KillUnit(string unitCoords){
+		public void WipeUnit(string unitCoords){
 			
 			ConstructNewUnit(convertStringToArray(unitCoords, 2), Mark.None, Unit.UnitType.None);
 
 		}
+
+	
 
 		void InitialGameSetup(){
 			
@@ -232,7 +288,7 @@ namespace Lookout
 
 
 
-		public string convertArrayToString(int[] array){
+		public static string convertArrayToString(int[] array){
 			string newString = "";
 
 			int x = 0;
