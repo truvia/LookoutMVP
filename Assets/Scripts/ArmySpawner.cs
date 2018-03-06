@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class ArmySpawner : MonoBehaviour {
+public class ArmySpawner : NetworkBehaviour {
 
 	public GameObject ArmyPrefab;
 	public GameObject FortressPrefab;
@@ -16,29 +17,29 @@ public class ArmySpawner : MonoBehaviour {
 //	private Army[] armies;
 
 
-
 	public void InstantiatePrefab(Vector3 location, Unit unit){
-		GameObject gameObject;
+		GameObject newGameObject;
 
 		if (unit.unit_type == Unit.UnitType.Army) {
-			gameObject = ArmyPrefab;
+			newGameObject = ArmyPrefab;
 		} else if (unit.unit_type == Unit.UnitType.Fortress) {
-			gameObject = FortressPrefab;
+			newGameObject = FortressPrefab;
 		} else if (unit.unit_type == Unit.UnitType.Spy) {
-			gameObject = SpyPrefab;
+			newGameObject = SpyPrefab;
 		} else {
-			gameObject = ArmyPrefab;
+			newGameObject = ArmyPrefab;
 		}
 
 	Transform parent = this.transform;
 
-		GameObject newUnit = Instantiate (gameObject, location, Quaternion.identity, parent);
+		GameObject newUnit = Instantiate (newGameObject, location, Quaternion.identity, parent);
 
 		newUnit.AddComponent<Unit> ();
 		newUnit.GetComponent<Unit> ().allegiance = unit.allegiance;
 		newUnit.GetComponent<Unit> ().unit_type = unit.unit_type;
 		newUnit.GetComponent<Unit> ().strength = unit.strength;
 
+		NetworkServer.Spawn (newUnit);
 	}
 
 

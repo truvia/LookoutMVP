@@ -2,15 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NewBehaviourScript : MonoBehaviour {
-
-	// Use this for initialization
-	void Start () {
-		
-	}
+public class Billboard : MonoBehaviour {
+	
 	
 	// Update is called once per frame
 	void Update () {
-		
+		transform.LookAt(Camera.main.transform);
 	}
 }

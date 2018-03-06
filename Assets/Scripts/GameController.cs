@@ -27,7 +27,7 @@ public class GameController : MonoBehaviour {
 
 	void Start(){
 		selector = FindObjectOfType<Selector> ();
-		board = GetComponentInChildren<Board> ();
+		board = FindObjectOfType<Board> ();
 		game.Reset ();
 
 
@@ -120,7 +120,7 @@ public class GameController : MonoBehaviour {
 	}
 
 	void RefreshBoard(){
-		Unit[] units =	GetComponentsInChildren<Unit> ();
+		Unit[] units =	FindObjectsOfType<Unit> ();
 
 		foreach (Unit unit in units) {
 			Destroy (unit.gameObject);
