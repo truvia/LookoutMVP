@@ -708,7 +708,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   conPrefab: {fileID: 1952213490296286, guid: f2ac935ef217c874d895d87c3b1aaf61, type: 2}
-  numberofConArmies: 3
+  numberofConArmies: 2
   spawnPoints:
   - {fileID: 672541349}
   - {fileID: 397175543}
@@ -1461,6 +1461,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2136109499}
   - component: {fileID: 2136109502}
+  - component: {fileID: 2136109500}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -1494,6 +1495,18 @@ Transform:
   m_Father: {fileID: 1992499850}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2136109500
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2136109498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d6669d68bbf21f49a5a3dec0ca60a5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  highlightColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!65 &2136109502
 BoxCollider:
   m_ObjectHideFlags: 0

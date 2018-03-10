@@ -5,7 +5,7 @@ using Lookout;
 using UnityEngine.EventSystems;
 using UnityEngine.Events;
 using UnityEngine.UI;
-
+	
 
 public class Board : MonoBehaviour, IPointerClickHandler	 {
 
@@ -47,8 +47,6 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 
 	}
 
-
-
 	public void Show(int[] coords, Mark mark, Unit unit){
 		ArmySpawner armySpawner = mark == Mark.CON ? CONArmySpawner : USArmySpawner;
 
@@ -67,6 +65,7 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 		}
 
 		int[] coords = new int[]{x, z};
+	
 		EventManager.TriggerEvent (SquareClickedNotification, coords);
 
 	}
@@ -83,6 +82,8 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 	}
 
 	public void ShowPossibleSquares(int[] coords, Unit unit){
+		gameController = FindObjectOfType<GameController> ();
+		Debug.Log ("Show POssible Squares");
 		ClearAllSelectorSquares ();
 
 		if (unit.unit_type == Unit.UnitType.Army) {
@@ -98,9 +99,13 @@ public class Board : MonoBehaviour, IPointerClickHandler	 {
 					selectorCoord.x = coords[0] + x + 0.5f;
 					selectorCoord.z = coords[1] + z + 0.5f;
 
+
 					int[] newCoords = new int[]{coords[0] + x, coords[1] + z };
 
 					string coordsAsString = Game.convertArrayToString (newCoords);
+
+
+
 
 					if (selectorCoord.x < 0.5f || selectorCoord.z < 0.5f || selectorCoord.x > width || selectorCoord.z > height 
 						|| gameController.game.unitDictionary [coordsAsString].allegiance == unit.allegiance) {

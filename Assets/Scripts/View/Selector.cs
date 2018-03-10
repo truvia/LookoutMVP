@@ -70,6 +70,8 @@ public class Selector : MonoBehaviour {
 	}
 
 	void OnTriggerEnter(Collider collider){
+
+		Debug.Log ("what control is this" + gameController.game.control);
 		if (collider.GetComponent<Unit>() && collider.GetComponent<Unit>().allegiance == gameController.game.control) {
 
 			if (!anObjectSelected) {

@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
+
 public class MyNetworkManager : NetworkManager  {
-
-
 
 	public void MyStartHost(){
 		Debug.Log ("Starting Host at " + Time.timeSinceLevelLoad);
@@ -15,6 +14,8 @@ public class MyNetworkManager : NetworkManager  {
 
 	public override void OnStartHost(){
 		Debug.Log ("Host Started at " + Time.timeSinceLevelLoad);
+
+
 	}
 
 
@@ -38,7 +39,10 @@ public class MyNetworkManager : NetworkManager  {
 
 	void PrintDots(){
 		Debug.Log (".");
+	
 	}
+
+
 
 
 }

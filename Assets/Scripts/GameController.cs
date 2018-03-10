@@ -4,8 +4,9 @@ using UnityEngine;
 using Lookout;
 using UnityEngine.Events;
 using System.Linq;
+using UnityEngine.Networking;
 
-public class GameController : MonoBehaviour {
+public class GameController : NetworkBehaviour {
 
 	public Game game = new Game();
 	public Board board;
@@ -49,10 +50,17 @@ public class GameController : MonoBehaviour {
 	}
 
 
-
 	void OnBoardSquareClicked(object args){
 		int[] coordsAsInt = (int[])args;
-		string coords = Game.convertArrayToString ((int[])args);
+		CmdOnBoardSquareClicked(coordsAsInt);
+	}
+
+	[Command]
+	void CmdOnBoardSquareClicked(int[] coordsAsInt){
+		Debug.Log ("onboardsquareclicked");
+		RpcTurnTeller ();
+		
+		string coords = Game.convertArrayToString (coordsAsInt);
 		//if we have clicked on a selected square
 
 		if(board.possibleMovementCoords.Any(p => p.SequenceEqual(coordsAsInt))){
@@ -65,7 +73,7 @@ public class GameController : MonoBehaviour {
 				if (battleWon) {
 					game.WipeUnit (coords);
 					game.Place (coords);
-					RefreshBoard ();
+					CmdRefreshBoard ();
 
 				} else {
 					game.WipeUnit (game.selectedCoords);
@@ -77,7 +85,7 @@ public class GameController : MonoBehaviour {
 			
 			} else {
 				game.Place (coords);
-				RefreshBoard ();
+				CmdRefreshBoard ();
 			}
 
 
@@ -111,15 +119,21 @@ public class GameController : MonoBehaviour {
 		
 	}
 
+	[ClientRpc]
+	void RpcTurnTeller(){
+		Debug.Log(game.control);
+	}
+
 
 
 	void OnDidBeginGame(object args){
-		RefreshBoard ();
+		CmdRefreshBoard ();
 		Debug.Log ("Did Begin Game");
 	
 	}
 
-	void RefreshBoard(){
+	[Command]
+	void CmdRefreshBoard(){
 		Unit[] units =	FindObjectsOfType<Unit> ();
 
 		foreach (Unit unit in units) {
@@ -146,5 +160,7 @@ public class GameController : MonoBehaviour {
 
 
 	}
+
+
 }
 	
