@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.Networking;
 
 namespace Lookout
 {
@@ -76,8 +77,8 @@ namespace Lookout
 			EventManager.TriggerEvent (DidBeginGameNotification);
 
 		}
-
-		public void Place (string coords){
+		[Command]
+		public void CmdPlace (string coords){
 
 			Mark markAtThisCoord = unitDictionary [coords].allegiance;
 			if (markAtThisCoord != Mark.None) {
@@ -96,14 +97,14 @@ namespace Lookout
 			CheckForGameOver();
 
 			if(control != Mark.None && AreThereAnyEnemyArmiesLeft()){
-				ChangeTurn();
+				CmdChangeTurn();
 			
 			}
 		}
 		
 
-
-		public void ChangeTurn(){
+		[Command]
+		public void CmdChangeTurn(){
 
 			Debug.Log ("ChangeTurn called");
 			control = (control == Mark.CON) ? Mark.USA : Mark.CON;
@@ -210,8 +211,8 @@ namespace Lookout
 			return AttackerWin;
 		
 		}
-
-		public void WipeUnit(string unitCoords){
+		[Command]
+		public void CmdWipeUnit(string unitCoords){
 			
 			ConstructNewUnit(convertStringToArray(unitCoords, 2), Mark.None, Unit.UnitType.None);
 
@@ -340,6 +341,9 @@ namespace Lookout
 
 
 	}
+
+
+
 		
 
 

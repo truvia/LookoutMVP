@@ -18,6 +18,10 @@ public class Selector : MonoBehaviour {
 	//	board = FindObjectOfType<Board> ();
 	}
 
+	void OnStartServer(){
+		gameController = FindObjectOfType<GameController> ();
+	}
+
 //	// Use this for initialization
 //	void OnMouseDown(){
 //		//if no piece is selected

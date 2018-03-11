@@ -52,14 +52,9 @@ public class GameController : NetworkBehaviour {
 
 	void OnBoardSquareClicked(object args){
 		int[] coordsAsInt = (int[])args;
-		CmdOnBoardSquareClicked(coordsAsInt);
-	}
-
-	[Command]
-	void CmdOnBoardSquareClicked(int[] coordsAsInt){
+	
 		Debug.Log ("onboardsquareclicked");
-		RpcTurnTeller ();
-		
+
 		string coords = Game.convertArrayToString (coordsAsInt);
 		//if we have clicked on a selected square
 
@@ -71,20 +66,24 @@ public class GameController : NetworkBehaviour {
 				bool battleWon = game.DoBattle (coords); 
 
 				if (battleWon) {
-					game.WipeUnit (coords);
-					game.Place (coords);
+					
+					game.CmdWipeUnit (coords);
+					game.CmdPlace (coords);
 					CmdRefreshBoard ();
 
 				} else {
-					game.WipeUnit (game.selectedCoords);
-					selector.KillSelectedPiece ();
+					game.CmdWipeUnit (game.selectedCoords);
+					game.selectedCoords = null;
+					CmdRefreshBoard ();
+				//	N.B. we've use refresh board to hide the selected unit, as there is some kind of bug meaning that the selctor is not picking up the unit for some reason.
+				//	selector.KillSelectedPiece ();
 					game.CheckForGameOver ();
-					game.ChangeTurn ();
+					game.CmdChangeTurn ();
 
 				}
 			
 			} else {
-				game.Place (coords);
+				game.CmdPlace (coords);
 				CmdRefreshBoard ();
 			}
 
@@ -119,10 +118,7 @@ public class GameController : NetworkBehaviour {
 		
 	}
 
-	[ClientRpc]
-	void RpcTurnTeller(){
-		Debug.Log(game.control);
-	}
+
 
 
 
@@ -134,29 +130,34 @@ public class GameController : NetworkBehaviour {
 
 	[Command]
 	void CmdRefreshBoard(){
+
 		Unit[] units =	FindObjectsOfType<Unit> ();
 
 		foreach (Unit unit in units) {
 			Destroy (unit.gameObject);
-		
+
 		}	
 
 		foreach(KeyValuePair<string, Unit> keyValue in game.unitDictionary){
-			string key = keyValue.Key;
-			Unit value = keyValue.Value;
+				string key = keyValue.Key;
+				Unit value = keyValue.Value;
 
-			int[] coords = game.convertStringToArray(key, 2);
+				int[] coords = game.convertStringToArray(key, 2);
 
-			if (value.allegiance != Mark.None) {
-				board.Show (coords, value.allegiance, value);
-			
+				if (value.allegiance != Mark.None) {
+					board.Show (coords, value.allegiance, value);
+
+				}
+
+
 			}
 
 
-		}
+
+	
+
 
 		board.RevertStrengthText ();
-
 
 
 	}
