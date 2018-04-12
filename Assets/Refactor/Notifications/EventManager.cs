@@ -4,11 +4,11 @@ using UnityEngine;
 using UnityEngine.Events;
 
 [System.Serializable]
-public class Event : UnityEvent<System.Object>{}
+public class REvent : UnityEvent<System.Object>{}
 
 public class EventManager : MonoBehaviour {
 
-	private Dictionary <string, Event> eventDictionary; //creates a dictionary called eventDictionary. The key will be a string, and the value will be a unity event.
+	private Dictionary <string, REvent> eventDictionary; //creates a dictionary called eventDictionary. The key will be a string, and the value will be a unity event.
 	private static EventManager eventManager; 
 
 	public static EventManager instance {
@@ -35,14 +35,14 @@ public class EventManager : MonoBehaviour {
 
 	void Initialise(){
 		if (eventDictionary == null) {
-			eventDictionary = new Dictionary<string, Event> ();
+			eventDictionary = new Dictionary<string, REvent> ();
 				
 		}
 
 	}
 
 	public static void StartListening(string eventName, UnityAction<System.Object> listener){
-		Event thisEvent = null;
+		REvent thisEvent = null;
 
 		if(instance.eventDictionary.TryGetValue(eventName, out thisEvent)){
 		
@@ -50,7 +50,7 @@ public class EventManager : MonoBehaviour {
 		
 		}else{
 			
-			thisEvent = new Event();
+			thisEvent = new REvent();
 			thisEvent.AddListener(listener);
 			instance.eventDictionary.Add(eventName, thisEvent);
 
@@ -63,7 +63,7 @@ public class EventManager : MonoBehaviour {
 		if (eventManager == null) {
 			return;
 		}
-		Event thisEvent = null;
+		REvent thisEvent = null;
 
 		if (instance.eventDictionary.TryGetValue (eventName, out thisEvent)) {
 		
@@ -74,7 +74,7 @@ public class EventManager : MonoBehaviour {
 
 
 	public static void TriggerEvent(string eventName, System.Object arg=null){
-		Event thisEvent = null;
+		REvent thisEvent = null;
 
 		if(instance.eventDictionary.TryGetValue(eventName, out thisEvent)){
 			thisEvent.Invoke(arg);

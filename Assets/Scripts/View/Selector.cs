@@ -15,12 +15,10 @@ public class Selector : MonoBehaviour {
 
 	void Start(){
 		gameController = FindObjectOfType<GameController> ();
+
 	//	board = FindObjectOfType<Board> ();
 	}
 
-	void OnStartServer(){
-		gameController = FindObjectOfType<GameController> ();
-	}
 
 //	// Use this for initialization
 //	void OnMouseDown(){
@@ -74,8 +72,11 @@ public class Selector : MonoBehaviour {
 	}
 
 	void OnTriggerEnter(Collider collider){
+		gameController = FindObjectOfType<GameController> ();
+		Debug.Log ("collider is " + collider);
 
-		Debug.Log ("what control is this" + gameController.game.control);
+		//selectedPiece = collider.gameObject;
+		//Debug.Log ("what control is this" + gameController.game.control);
 		if (collider.GetComponent<Unit>() && collider.GetComponent<Unit>().allegiance == gameController.game.control) {
 
 			if (!anObjectSelected) {

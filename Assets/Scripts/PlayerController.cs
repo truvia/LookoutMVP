@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
-//using Lookout;
+using Lookout;
 using UnityEngine.UI;
 
 public class PlayerController : NetworkBehaviour {
@@ -14,7 +14,10 @@ public class PlayerController : NetworkBehaviour {
 	public const string GetAllegianceOfPlayer = "PlayerController.GetAllegianceOfPlayer";
 
 	public int score;
-	//public Mark mySide;
+	public Mark mySide;
+
+
+	private GameController gameController;
 	// Use this for initialization
 
 	public override void OnStartClient ()
@@ -28,13 +31,14 @@ public class PlayerController : NetworkBehaviour {
 	{
 		base.OnStartLocalPlayer ();
 		EventManager.TriggerEvent (StartedLocal);
-//		if (isServer) {
-//			mySide = Mark.CON;
-//		} else if (!isServer) {
-//			mySide = Mark.USA;
-//		
-//		}
-//		EventManager.TriggerEvent (GetAllegianceOfPlayer, mySide);
+		if (isServer) {
+			mySide = Mark.CON;
+		} else if (!isServer) {
+			mySide = Mark.USA;
+		
+		}
+
+		EventManager.TriggerEvent (GetAllegianceOfPlayer, mySide);
 
 	}
 
@@ -52,6 +56,18 @@ public class PlayerController : NetworkBehaviour {
 	[ClientRpc]
 	void RpcCoinToss(bool coinToss){
 		EventManager.TriggerEvent (CoinToss, coinToss);
+	}
+
+
+	void AssignMyAuthority(){
+		Unit[] allUnits = FindObjectsOfType<Unit> ();
+
+		foreach (Unit unit in allUnits) {
+			if (unit.allegiance == mySide) {
+				
+			}
+		
+		}
 	}
 
 

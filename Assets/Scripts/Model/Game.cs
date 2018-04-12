@@ -106,11 +106,15 @@ namespace Lookout
 		[Command]
 		public void CmdChangeTurn(){
 
-			Debug.Log ("ChangeTurn called");
+			Debug.Log ("ChangeTurn called turn is " + control);
 			control = (control == Mark.CON) ? Mark.USA : Mark.CON;
 			EventManager.TriggerEvent (DidChangeControlNotification);
 
 		}
+
+
+
+
 
 		public void CheckForGameOver(){
 
@@ -237,6 +241,9 @@ namespace Lookout
 				new int[] { 1, 4 }
 
 			};
+
+			//Pseudo code:
+			//if the player Myside is Con, create the Con possible aquare
 
 			int x = RandomIntCreator (0f, USPossibleStartSquares.Length);
 			int y = 0;

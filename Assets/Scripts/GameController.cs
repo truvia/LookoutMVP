@@ -34,6 +34,10 @@ public class GameController : NetworkBehaviour {
 
 	}
 
+	void Update(){
+
+	}
+
 
 	void OnEnable(){
 		//GameController is listening to the following: 
@@ -61,7 +65,11 @@ public class GameController : NetworkBehaviour {
 		if(board.possibleMovementCoords.Any(p => p.SequenceEqual(coordsAsInt))){
 			//first check if it is in a moveable square
 
+			Debug.Log ("Clicekd and there is a possible movementsquare");
+
 			if (board.battleSquareCoords.Any (p => p.SequenceEqual (coordsAsInt))) {
+
+				Debug.Log ("Clicekd and there is a possible battlesquare");
 				//if it is a battle square, do battle
 				bool battleWon = game.DoBattle (coords); 
 
@@ -83,6 +91,8 @@ public class GameController : NetworkBehaviour {
 				}
 			
 			} else {
+
+				Debug.Log ("Clicekd and there are no possible battlesquares");
 				game.CmdPlace (coords);
 				CmdRefreshBoard ();
 			}
@@ -93,6 +103,8 @@ public class GameController : NetworkBehaviour {
 			board.battleSquareCoords.Clear ();
 		}
 
+
+
 		board.ClearAllSelectorSquares ();
 		if (game.control == Lookout.Mark.None) {
 			Debug.Log ("Nobody is in control so reset game");
@@ -100,10 +112,14 @@ public class GameController : NetworkBehaviour {
 			game.Reset ();
 
 		} else {
+
+			Debug.Log ("cliked and others in control so keep palying, show whatever possible squares there are ");
 			
 		//is there an object at this location;
 
 			if (game.unitDictionary [coords].allegiance != Mark.None && game.unitDictionary[coords].allegiance == game.control) {
+				Debug.Log ("I've clicked on a unit that is the same as game.control which is " + game.control);
+
 			//I have clicked on my unit
 				game.selectedCoords = coords;
 				board.ChangeText (game.unitDictionary [coords].strength);
@@ -131,6 +147,13 @@ public class GameController : NetworkBehaviour {
 	[Command]
 	void CmdRefreshBoard(){
 
+		RpcRefreshBoard ();
+
+	}
+
+	[ClientRpc]
+	void RpcRefreshBoard(){
+
 		Unit[] units =	FindObjectsOfType<Unit> ();
 
 		foreach (Unit unit in units) {
@@ -139,29 +162,27 @@ public class GameController : NetworkBehaviour {
 		}	
 
 		foreach(KeyValuePair<string, Unit> keyValue in game.unitDictionary){
-				string key = keyValue.Key;
-				Unit value = keyValue.Value;
+			string key = keyValue.Key;
+			Unit value = keyValue.Value;
 
-				int[] coords = game.convertStringToArray(key, 2);
+			int[] coords = game.convertStringToArray(key, 2);
 
-				if (value.allegiance != Mark.None) {
-					board.Show (coords, value.allegiance, value);
-
-				}
-
+			if (value.allegiance != Mark.None) {
+				board.Show (coords, value.allegiance, value);
 
 			}
 
 
+		}
 
-	
+
+
+
 
 
 		board.RevertStrengthText ();
 
-
 	}
-
 
 }
 	

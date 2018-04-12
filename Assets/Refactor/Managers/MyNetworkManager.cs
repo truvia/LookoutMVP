@@ -13,6 +13,7 @@ public class MyNetworkManager : NetworkManager  {
 	}
 
 	public override void OnStartHost(){
+		base.OnStartHost ();
 		Debug.Log ("Host Started at " + Time.timeSinceLevelLoad);
 
 
@@ -26,16 +27,19 @@ public class MyNetworkManager : NetworkManager  {
 	}
 
 	public override void OnStartClient(NetworkClient myClient){
+		base.OnStartClient (myClient);
 		Debug.Log ("Client start requested at " + Time.timeSinceLevelLoad);
 		InvokeRepeating ("PrintDots", 0f, 1f);
 
 	}
 
 	public override void OnClientConnect(NetworkConnection con){
+		base.OnClientConnect (con);
 		Debug.Log ("Client is connected to " + con.address + " at "  + Time.timeSinceLevelLoad);
 		CancelInvoke ();
 
 	}
+
 
 	void PrintDots(){
 		Debug.Log (".");

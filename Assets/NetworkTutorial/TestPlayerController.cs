@@ -33,10 +33,16 @@ public class TestPlayerController : NetworkBehaviour
 
 	[Command]
 	void CmdFire(){
-		GameObject bullet = (GameObject)Instantiate (bulletPrefab, bulletSpawn.position, bulletSpawn.rotation);
+		RpcInstantiateBullet ();
 
+	}
+
+	[ClientRpc]
+	void RpcInstantiateBullet(){
+		GameObject bullet = (GameObject)Instantiate (bulletPrefab, bulletSpawn.position, bulletSpawn.rotation);
 		bullet.GetComponent<Rigidbody> ().velocity = bullet.transform.forward * 6;
-		NetworkServer.Spawn (bullet);
+
+		//NetworkServer.Spawn (bullet); 
 		Destroy (bullet, 2.0f);
 	}
 }
