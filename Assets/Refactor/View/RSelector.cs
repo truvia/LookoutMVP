@@ -19,19 +19,6 @@ public class RSelector : MonoBehaviour {
 		}
 
 
-	void Update(){
-		if (Input.GetMouseButton(0)) {
-			if (pieceAtThisCoord != null) {
-				selectedPiece = pieceAtThisCoord;
-				selectedPiece.transform.parent = this.transform;
-
-			}
-
-		}
-	}
-
-
-
 	public void ReturnPieceToOriginalPosition(){
 		Debug.Log ("return to initial position called");
 		if (selectedPiece) {
@@ -48,6 +35,7 @@ public class RSelector : MonoBehaviour {
 
 		//anObjectSelected = false;
 		originalParent = null;
+		//originalPosition = null;
 	
 	}
 
@@ -57,8 +45,6 @@ public class RSelector : MonoBehaviour {
 		if (collider.GetComponent<RUnit>() && collider.GetComponent<RUnit>().allegiance == gameController.game.control) {
 
 			pieceAtThisCoord = collider.gameObject;
-					
-
 		}
 	}
 
@@ -67,12 +53,19 @@ public class RSelector : MonoBehaviour {
 		if (collider.GetComponent<RUnit> ()) {
 			
 			pieceAtThisCoord = null;
-			//originalParent = null;
-
 		}
 
 
 	}
+
+	public void SelectPiece(GameObject pieceToSelect){
+		originalParent = pieceToSelect.transform.parent.gameObject;
+		originalPosition = pieceToSelect.transform.position;
+
+		selectedPiece = pieceToSelect;
+		selectedPiece.transform.parent = this.transform;
+	}
+
 
 
 

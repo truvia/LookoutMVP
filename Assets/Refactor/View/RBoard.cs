@@ -26,7 +26,7 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 		gameController = FindObjectOfType<RGameController> ();
 	}
 
-	public void Show(int[] coords, Mark allegiance, RUnit unit){
+	public void Place(int[] coords, Mark allegiance, RUnit unit){
 		
 		RArmySpawner armySpawner = allegiance == Mark.CON ? CONArmySpawner : USArmySpawner;
 		Vector3 location = new Vector3 (coords [0] + 0.5f, 0.05f, coords [1] + 0.5f);
@@ -79,6 +79,7 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 						//if there is a unit there
 						if (gameController.game.squareDictionary [coordsAsString].unitOccupyingSquare.allegiance == unit.allegiance && gameController.game.squareDictionary [coordsAsString].unitOccupyingSquare.unitType == UnitType.Army) {
 							//if it is my unit there
+
 							selectionSquare = blueSelectionSquarePrefab;
 							mergeableSquareCoords.Add (newCoords);
 							GameObject newUnit = Instantiate (selectionSquare, selectorCoord, Quaternion.identity, selectionSquaresSpawner);

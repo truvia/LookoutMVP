@@ -39,12 +39,8 @@ public class RMouseMover : MonoBehaviour {
 
 		} else {
 			if (selector.gameObject.activeInHierarchy) {
-
-				if(selector.selectedPiece != null){
-					selector.ReturnPieceToOriginalPosition ();
-				}
-
-				selector.gameObject.SetActive (false);
+				selector.ReturnPieceToOriginalPosition ();
+				//selector.gameObject.SetActive (false);
 				board.ClearAllSelectorSquares ();
 			}
 		}

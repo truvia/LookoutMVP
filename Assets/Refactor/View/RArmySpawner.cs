@@ -30,16 +30,17 @@ public class RArmySpawner : NetworkBehaviour {
 		} else {
 			newGameObject = ArmyPrefab;
 		}
+			
 
 		Transform parent = this.transform;
 
 		GameObject newUnit = Instantiate (newGameObject, location, Quaternion.identity, parent);
 
+
 		newUnit.AddComponent<RUnit> ();
 		newUnit.GetComponent<RUnit> ().allegiance = unit.allegiance;
 		newUnit.GetComponent<RUnit> ().unitType = unit.unitType;
 		newUnit.GetComponent<RUnit> ().strength = unit.strength;
-
 		//NetworkServer.Spawn (newUnit);
 	}
 
