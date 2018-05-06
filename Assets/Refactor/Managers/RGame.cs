@@ -182,6 +182,16 @@ namespace RLookout{
 			} 
 		}
 
+		public void MovePiece(string selectedPieceCoords, string squareClickedCoords){
+				
+			squareDictionary [squareClickedCoords].unitOccupyingSquare = squareDictionary [selectedPieceCoords].unitOccupyingSquare;
+			squareDictionary [squareClickedCoords].squareOccupied = true;
+
+			squareDictionary [selectedPieceCoords].unitOccupyingSquare = null;
+			squareDictionary [selectedPieceCoords].squareOccupied = false;
+			//Debug.Log ("Unit has been moved from " + selectedPieceCoords + " to " + squareClickedCoords + " and this is confirmed in the squareDictionary because the new square we clicked on has this unit on it " + squareDictionary [squareClickedCoords].unitOccupyingSquare + " and the original square is now empty (false if true) " + squareDictionary [selectedPieceCoords].squareOccupied);
+		}
+
 	
 
 	}

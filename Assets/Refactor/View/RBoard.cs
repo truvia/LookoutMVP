@@ -35,7 +35,7 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 
 	void IPointerClickHandler.OnPointerClick(PointerEventData eventData){
 
-		Debug.Log ("clicked");
+		//Debug.Log ("clicked");
 		Vector3 pos = eventData.pointerCurrentRaycast.worldPosition;
 		int x = Mathf.FloorToInt (pos.x);
 		int z = Mathf.FloorToInt (pos.z);
@@ -54,7 +54,7 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 
 
 	public void ShowPossibleSquares(int[] coords, RUnit unit){
-		Debug.Log ("Show Possible Squares called");
+		//Debug.Log ("Show Possible Squares called");
 		ClearAllSelectorSquares ();
 		GameObject selectionSquare;
 
@@ -78,12 +78,17 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 					} else if (gameController.game.squareDictionary [coordsAsString].squareOccupied) {
 						//if there is a unit there
 						if (gameController.game.squareDictionary [coordsAsString].unitOccupyingSquare.allegiance == unit.allegiance && gameController.game.squareDictionary [coordsAsString].unitOccupyingSquare.unitType == UnitType.Army) {
-							//if it is my unit there
+							//if it is a unit of my allegiance there
+							if (unit.coords != coordsAsString) {
+								//stops a blue square forming on original position;
+								selectionSquare = blueSelectionSquarePrefab;
 
-							selectionSquare = blueSelectionSquarePrefab;
-							mergeableSquareCoords.Add (newCoords);
-							GameObject newUnit = Instantiate (selectionSquare, selectorCoord, Quaternion.identity, selectionSquaresSpawner);
-							newUnit.tag = "selectorSquare";
+								mergeableSquareCoords.Add (newCoords);
+								GameObject newUnit = Instantiate (selectionSquare, selectorCoord, Quaternion.identity, selectionSquaresSpawner);
+								newUnit.tag = "selectorSquare";
+							} else {
+								//if we want to instantiate a special square that says where it came from.
+							}
 						} else if (gameController.game.squareDictionary [coordsAsString].unitOccupyingSquare.allegiance == unit.allegiance && gameController.game.squareDictionary [coordsAsString].unitOccupyingSquare.unitType == UnitType.Fortress) {
 							//Do nothing
 						 
@@ -120,12 +125,28 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 
 			foreach (Transform selectorSquareTransform in allSelectorSquare) {
 				if (selectorSquareTransform.gameObject.tag == "selectorSquare") {
-					Debug.Log (selectorSquareTransform.name);
+					//.Log (selectorSquareTransform.name);
 					Destroy (selectorSquareTransform.gameObject);
 
 				}
 			}
 
 		}
+
+		if (possibleMovementCoords.Count > 0) {
+			possibleMovementCoords.Clear ();
+		}
+
+		if (battleSquareCoords.Count > 0) {
+			battleSquareCoords.Clear ();
+		}
+
+		if (mergeableSquareCoords.Count > 0) {
+			mergeableSquareCoords.Clear ();
+		}
 	}
+
+
+
+
 }

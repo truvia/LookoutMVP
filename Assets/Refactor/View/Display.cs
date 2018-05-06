@@ -9,6 +9,7 @@ public class Display : MonoBehaviour {
 	public const string DidRequestEndTurn = "Display.DidBeginGameNotification";
 	public GameObject NetworkingHUD;
 	public GameObject GameplayHUD;
+	public GameObject MergeUnitHUD;
 	public Button EndTurnButton;
 	public Text controlText;
 	public Text strengthText;
@@ -61,29 +62,41 @@ public class Display : MonoBehaviour {
 	}
 
 	void OnLocalPlayerStarted(object obj){
-		HideNetworkButtons ();
-		ShowGameplayButtons ();
-	}
+		HideHUD (NetworkingHUD);
+		ShowHUD (GameplayHUD);
 
-	void HideNetworkButtons(){
-		NetworkingHUD.SetActive (false);
 	}
 
 	void ShowNetworkButtons(object obj){
-		NetworkingHUD.SetActive (true);
+		ShowHUD (NetworkingHUD);
 	}
 
-	void ShowGameplayButtons(){
-		GameplayHUD.SetActive (true);
+	public void HideHUD(GameObject thisHUD){
+		thisHUD.SetActive (false);
 	}
 
+	public void ShowHUD(GameObject thisHUD){
+		thisHUD.SetActive (true);
+	}
 
 	/* Developer Code Only */
 	public void RequestResetGame(){
 		EventManager.TriggerEvent (DidRequestResetGame);
 	}
 
-	void GreyOutEndTurnButton(){
+	public void MergeUnits(){
+		
 	}
 
+	public void CancelInput(){
+		
+	}
+
+	public void TestMerge(GameObject originalPiece, RUnit mergePiece){
+
+		ShowHUD (MergeUnitHUD);
+
+
+	}
 }
+

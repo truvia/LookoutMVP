@@ -134,7 +134,7 @@ public class RPlayerController : NetworkBehaviour {
 
 	#region DeveloperDebugOnly
 	void RequestResetGame(object obj){
-		Debug.Log ("Request Reset Game called");
+		//Debug.Log ("Request Reset Game called");
 		CmdDefineStartPositions ();
 	}
 

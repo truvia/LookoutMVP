@@ -20,22 +20,19 @@ public class RSelector : MonoBehaviour {
 
 
 	public void ReturnPieceToOriginalPosition(){
-		Debug.Log ("return to initial position called");
+	//	Debug.Log ("return to initial position called");
 		if (selectedPiece) {
 			selectedPiece.transform.position = originalPosition;
 			selectedPiece.transform.SetParent (originalParent.transform);
-			selectedPiece = null;
-			originalPosition = transform.position;
 			DeselectPiece ();
 		}
 	}
 
 
 	private void DeselectPiece(){
-
-		//anObjectSelected = false;
+		selectedPiece = null;
+		originalPosition = transform.position;
 		originalParent = null;
-		//originalPosition = null;
 	
 	}
 
@@ -64,6 +61,14 @@ public class RSelector : MonoBehaviour {
 
 		selectedPiece = pieceToSelect;
 		selectedPiece.transform.parent = this.transform;
+	}
+
+	public void PlacePiece(string newStringCoords){
+		if (selectedPiece) {
+			selectedPiece.transform.SetParent (originalParent.transform);
+			selectedPiece.GetComponent<RUnit> ().coords = newStringCoords;
+			DeselectPiece ();
+		}
 	}
 
 

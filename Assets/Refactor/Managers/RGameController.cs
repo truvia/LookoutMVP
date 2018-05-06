@@ -15,6 +15,8 @@ public class RGameController : NetworkBehaviour {
 
 	private RBoard board;
 	private RSelector selector;
+	private Display display;
+
 	// Use this for initialization
 
 	public RGame game = new RGame();
@@ -27,6 +29,8 @@ public class RGameController : NetworkBehaviour {
 		didStartLocalPlayerNotificationAction = new UnityAction<System.Object> (IdentifyLocalPlayer);
 		board = FindObjectOfType<RBoard> ();
 		selector = FindObjectOfType<RSelector> ();
+		display = FindObjectOfType<Display> ();
+
 	}
 
 	void OnEnable(){
@@ -45,7 +49,7 @@ public class RGameController : NetworkBehaviour {
 
 	void RefreshBoard(object obj){
 		DestroyAllUnits ();
-		Debug.Log ("GameController . Refresh Board Called");
+		//Debug.Log ("GameController . Refresh Board Called");
 	
 		foreach(KeyValuePair<string, Square> keyValue in game.squareDictionary){
 			string key = keyValue.Key;
@@ -77,7 +81,7 @@ public class RGameController : NetworkBehaviour {
 
 		
 	void OnBoardSquareClicked(object args){
-		Debug.Log ("RGameController.OnboardSquareClicked");
+		//Debug.Log ("RGameController.OnboardSquareClicked");
 		int[] intCoords = (int[]) args; 
 		string stringCoords = ConvertArrayToString (intCoords);
 
@@ -87,53 +91,68 @@ public class RGameController : NetworkBehaviour {
 			if (game.squareDictionary [stringCoords].squareOccupied) {
 				if (game.squareDictionary [stringCoords].unitOccupyingSquare.allegiance == localPlayerController.myAllegiance) {
 					//there is a piece at this location in the square dictionary and it is my allegiance;
-					if(selector.pieceAtThisCoord && selector.selectedPiece == null){
-						//there is not a piece selected;
-						selector.SelectPiece(selector.pieceAtThisCoord);
-					}
+					if (selector.pieceAtThisCoord) {
+						//to prevent a bounceback if there is no piece at this coord
+						selector.SelectPiece (selector.pieceAtThisCoord);
+						board.ShowPossibleSquares (intCoords, selector.pieceAtThisCoord.GetComponent<RUnit> ());
 
-//					selector.originalParent = selector.pieceAtThisCoord.transform.parent.gameObject;
-//					selector.originalPosition = selector.pieceAtThisCoord.transform.position;
-//					selector.selectedPiece = selector.pieceAtThisCoord;
-//
-					board.ShowPossibleSquares (intCoords, selector.pieceAtThisCoord.GetComponent<RUnit>());
-				}
+					} else {
+						Debug.Log (this + " says that there is no selector.pieceAtThiscoord");	
+					
+					}
+				} 
 			}
 
 		} else {
+			// A piece is currently selected
+
 			foreach (int[] intArray in board.possibleMovementCoords) {
-				if (intArray [0] == intCoords [0] && intArray [1] == intCoords [2]) {
+				if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
 					//Move piece to location
+					Debug.Log("Move piece requested");
+					game.MovePiece (selector.selectedPiece.GetComponent<RUnit> ().coords, stringCoords);
+					selector.PlacePiece (stringCoords);
+					board.ClearAllSelectorSquares ();
+
+				}
+			}
+
+			foreach (int[] intArray in board.mergeableSquareCoords) {
+				if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
+					//prompt merge square
+					Debug.Log("merge piece requested");
+					//prompt mergesquare;
+
+					RUnit mergeUnit = game.squareDictionary [stringCoords].unitOccupyingSquare;
+					GameObject originalPiece = selector.pieceAtThisCoord;
+
+					display.TestMerge (originalPiece, mergeUnit);
+					display.ShowHUD (display.MergeUnitHUD);
+					//if they say that it is fine
+					  
+//					if (display.mergetrue) {
+//						
+//					}
+
+				}
+			}
+
+			foreach (int[] intArray in board.battleSquareCoords) {
+				if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
+					//Prompt do battle
+					Debug.Log("do battle requested");
 				}
 			}
 			// a piece is currently selected
+
+	
+
+			}
+
 		
 		}
 
-			//if a piece is selected
-			//RSelector already only selects pieces that belong to us
-					
-		// If there is a piece where we've clicked:
-			/* check if we're already selected a piece or not
-			 * if we havent, check if the piece belongs to us
-			 * if the piece is ours check the possible movement squares and the possible takeable squares and highlight them
-			 */ 
-			 
-
-			/* 
-			If a piece is already selected
-			check if where we're clicking is in the moveable,  takeable or mergeable squares
-			if in the moveable square, place the piece and reduce the number of moves left;
-			if in the takeable square, Game.DoBattle
-				if, do battle resutls in win and destroy, destroy enemy piece and move this on the square and weaken by relevant amount
-				if DoBattle results in loss and destroy, destroy my piece, weaken enemy by relevant amount
-				If DoBattle results in stalemate, don't move piece and make necessary reductions in strneght to both
-			if in the mergeable square, destroy this army, and add strength to the relevant unit on the square
-			
-			if we've outside of all, do nothing.
-				*/
-	}
-
+	    
 	void IdentifyLocalPlayer(object obj){
 		Debug.Log ("Identify Local Player called");
 		RPlayerController playerController = (RPlayerController)obj;
@@ -179,6 +198,27 @@ public class RGameController : NetworkBehaviour {
 		return newString;
 
 	}	
+
+
+	public void DestroyUnitByUnitDictionary(RUnit unitToDestroy){
+		RUnit[] allUnits = FindObjectsOfType<RUnit> ();
+
+		foreach (RUnit thisUnit in allUnits) {
+			if (thisUnit.coords == unitToDestroy.coords) {
+				Destroy (thisUnit.gameObject);
+			}
+		}
+	}
+
+	public GameObject FindUnitByUnitDictionary(RUnit unitToFind){
+		RUnit[] allUnits = FindObjectsOfType<RUnit> ();
+		foreach (RUnit thisUnit in allUnits) {
+			if (thisUnit.coords == unitToFind.coords) {
+				return thisUnit.gameObject;
+			}
+		}
+		return null;
+	}
 
 
 
