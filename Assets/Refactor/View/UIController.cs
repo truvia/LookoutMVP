@@ -4,22 +4,26 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 
-public class Display : MonoBehaviour {
+public class UIController : MonoBehaviour {
 
 	public const string DidRequestEndTurn = "Display.DidBeginGameNotification";
 	public GameObject NetworkingHUD;
 	public GameObject GameplayHUD;
 	public GameObject MergeUnitHUD;
+	public GameObject UnitHUD;
 	public Button EndTurnButton;
 	public Text controlText;
 	public Text strengthText;
 
+
 	private RGameController gameController;
 	private MyNetworkManager myNetworkManager;
+	private RMouseMover mouseMover;
 
 	private UnityAction<System.Object> didStartLocalPlayerNotificationAction;
 
-
+	public Button myYesButton;
+	public Button myNoButton;
 
 	//Developer Only Code
 	public const string DidRequestResetGame = "Display.DidRequestResetGame"; 
@@ -40,12 +44,12 @@ public class Display : MonoBehaviour {
 	void Start(){
 		gameController = FindObjectOfType<RGameController> ();
 		myNetworkManager = FindObjectOfType<MyNetworkManager> ();
-
+		mouseMover = FindObjectOfType<RMouseMover> ();
 	}
 
 	void Update(){
 
-		if (gameController.localPlayerController.myAllegiance == gameController.game.control) {
+		if (gameController.localPlayerController && gameController.localPlayerController.myAllegiance == gameController.game.control) {
 			EndTurnButton.GetComponentInChildren<Text> ().color = Color.black;
 		} else {
 			EndTurnButton.GetComponentInChildren<Text> ().color = Color.grey;
@@ -85,18 +89,44 @@ public class Display : MonoBehaviour {
 	}
 
 	public void MergeUnits(){
-		
+		Debug.Log ("Merge Requested");
+		HideHUD (MergeUnitHUD);
+		gameController.MergeUnits ();
+		mouseMover.trackMouseMove = true;
+
 	}
 
 	public void CancelInput(){
-		
+		Debug.Log ("Merge cancelled");
+		HideHUD (MergeUnitHUD);
+		mouseMover.trackMouseMove = true;
 	}
 
-	public void TestMerge(GameObject originalPiece, RUnit mergePiece){
+//	public void PromptUser(){
+//		ShowHUD (MergeUnitHUD);
+//		WaitForUser(string question, new UnityAction ( () => {
+//			MergeUnits();
+//		}), new UnityAction( () => {
+//			CancelInput();
+//		}));
+//	}
 
+	public void WaitForUser(string question, UnityAction myYesButtonPressed, UnityAction myNoButtonPressed){
+		MergeUnitHUD.GetComponentInChildren<Text> ().text = question;
+		mouseMover.trackMouseMove = false;
 		ShowHUD (MergeUnitHUD);
 
+		myYesButton.onClick.RemoveAllListeners ();
+		myNoButton.onClick.RemoveAllListeners ();
 
+		myYesButton.onClick.AddListener (myYesButtonPressed);
+		myNoButton.onClick.AddListener (myNoButtonPressed);
 	}
+		
+	public void PrintUnitDictionary(){
+		gameController.game.LoopThroughUnitDictionary ();
+	}
+		
+
 }
 

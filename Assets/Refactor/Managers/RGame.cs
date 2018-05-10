@@ -40,8 +40,6 @@ namespace RLookout{
 
 	
 
-
-
 		string[] wins = new string[] {
 			"0,4", "4,0"
 		};
@@ -147,8 +145,8 @@ namespace RLookout{
 
 		}
 
-			public void ConstructNewUnit(string Coords, Mark allegiance, UnitType unitType, int strength){
-
+		public void ConstructNewUnit(string Coords, Mark allegiance, UnitType unitType, int strength){
+			
 			//GameObject obj = new GameObject ();
 				RUnit newUnit = new RUnit();
 			newUnit.allegiance = allegiance;
@@ -156,6 +154,19 @@ namespace RLookout{
 			newUnit.unitType = unitType;
 			newUnit.coords = Coords;
 			//newUnit.name = "New " + allegiance.ToString () + " Army";
+
+			if (unitType == UnitType.Army) {
+				newUnit.numMoves = 1;
+			} else if (unitType == UnitType.Fortress) {
+				newUnit.numMoves = 0;
+			} else if (unitType == UnitType.None) {
+				newUnit.numMoves = 0;
+			} else if (unitType == UnitType.Spy) {
+				newUnit.numMoves = 2;
+			} else {
+				Debug.Log ("RGame says that you haven't defined the number of moves for the unit type you are trying to construct in ConstructNewUnit. The unitType is " + unitType);
+			}
+
 			squareDictionary [Coords].unitOccupyingSquare = newUnit;
 			squareDictionary [Coords].squareOccupied = true;
 			//Debug.Log ("this is new" + squareDictionary [Coords].squareOccupied);
@@ -173,12 +184,13 @@ namespace RLookout{
 
 
 
-		private void LoopThroughUnitDictionary(){
+		public void LoopThroughUnitDictionary(){
 			foreach (KeyValuePair<string, Square> keyValue in squareDictionary) {
 				string key = keyValue.Key;
 				Square value = keyValue.Value;
-
-				//Debug.Log ("Game.LoopThroughUnitDictionary: coords are " + key + " and unit occupying square is " + value.squareOccupied);
+				if (value.squareOccupied) {
+					Debug.Log ("Game.LoopThroughUnitDictionary: coords are " + key + " and unit occupying square is " + value.squareOccupied + " and nummves is " + value.unitOccupyingSquare.numMoves);
+				}
 			} 
 		}
 
@@ -186,12 +198,24 @@ namespace RLookout{
 				
 			squareDictionary [squareClickedCoords].unitOccupyingSquare = squareDictionary [selectedPieceCoords].unitOccupyingSquare;
 			squareDictionary [squareClickedCoords].squareOccupied = true;
+			squareDictionary [squareClickedCoords].unitOccupyingSquare.coords = squareClickedCoords;
+
+			squareDictionary [squareClickedCoords].unitOccupyingSquare.numMoves -= 1;
 
 			squareDictionary [selectedPieceCoords].unitOccupyingSquare = null;
 			squareDictionary [selectedPieceCoords].squareOccupied = false;
 			//Debug.Log ("Unit has been moved from " + selectedPieceCoords + " to " + squareClickedCoords + " and this is confirmed in the squareDictionary because the new square we clicked on has this unit on it " + squareDictionary [squareClickedCoords].unitOccupyingSquare + " and the original square is now empty (false if true) " + squareDictionary [selectedPieceCoords].squareOccupied);
 		}
 
+		public void DestroyPiece(string coordsOfPieceToDestroy){
+			squareDictionary [coordsOfPieceToDestroy].squareOccupied = false;
+			squareDictionary [coordsOfPieceToDestroy].unitOccupyingSquare = null;
+		}
+
+		public void MergePiece(string coordsOfOriginalPiece, string coordsOfPieceToMergeWith){
+			squareDictionary [coordsOfPieceToMergeWith].unitOccupyingSquare.strength += squareDictionary [coordsOfOriginalPiece].unitOccupyingSquare.strength;
+			DestroyPiece (coordsOfOriginalPiece);
+		}
 	
 
 	}

@@ -5,6 +5,7 @@ using System.Collections;
 public class RMouseMover : MonoBehaviour {
 
 	public Color highlightColor;
+	public bool trackMouseMove = true;
 	private RSelector selector;
 
 	private Vector3 currentTileCoord;
@@ -23,28 +24,29 @@ public class RMouseMover : MonoBehaviour {
 		Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
 		RaycastHit hitInfo;
 
-		if (GetComponent<Collider> ().Raycast (ray, out hitInfo, Mathf.Infinity)) {
-			if (!selector.gameObject.activeInHierarchy) {
-				selector.gameObject.SetActive(true);
-			}
-			int x = Mathf.FloorToInt (hitInfo.point.x / 1);
-			int z = Mathf.FloorToInt (hitInfo.point.z / 1);
-			//Debug.Log ("Tile " + x + "," + z);
+		if (trackMouseMove) {
+			if (GetComponent<Collider> ().Raycast (ray, out hitInfo, Mathf.Infinity)) {
+				if (!selector.gameObject.activeInHierarchy) {
+					selector.gameObject.SetActive (true);
+				}
+				int x = Mathf.FloorToInt (hitInfo.point.x / 1);
+				int z = Mathf.FloorToInt (hitInfo.point.z / 1);
+				//Debug.Log ("Tile " + x + "," + z);
 
-			currentTileCoord.x = x + 0.5f;
-			currentTileCoord.z = z + 0.5f;
+				currentTileCoord.x = x + 0.5f;
+				currentTileCoord.z = z + 0.5f;
 
 
-			selector.transform.position = currentTileCoord;
+				selector.transform.position = currentTileCoord;
 
-		} else {
-			if (selector.gameObject.activeInHierarchy) {
-				selector.ReturnPieceToOriginalPosition ();
-				//selector.gameObject.SetActive (false);
-				board.ClearAllSelectorSquares ();
+			} else {
+				if (selector.gameObject.activeInHierarchy) {
+					selector.ReturnPieceToOriginalPosition ();
+					//selector.gameObject.SetActive (false);
+					board.ClearAllSelectorSquares ();
+				}
 			}
 		}
-
 	}
 
 

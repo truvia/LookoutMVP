@@ -30,15 +30,15 @@ public class RPlayerController : NetworkBehaviour {
 	}
 
 	void OnEnable(){
-		EventManager.StartListening(Display.DidRequestEndTurn, endTurnRequestNotification); 
+		EventManager.StartListening(UIController.DidRequestEndTurn, endTurnRequestNotification); 
 
 		//Developer area
-		EventManager.StartListening(Display.DidRequestResetGame, didRequestResetGameNotificationAction);
+		EventManager.StartListening(UIController.DidRequestResetGame, didRequestResetGameNotificationAction);
 	}
 
 	void OnDisable(){
-		EventManager.StopListening(Display.DidRequestEndTurn, endTurnRequestNotification);	
-		EventManager.StopListening (Display.DidRequestResetGame, didRequestResetGameNotificationAction);
+		EventManager.StopListening(UIController.DidRequestEndTurn, endTurnRequestNotification);	
+		EventManager.StopListening (UIController.DidRequestResetGame, didRequestResetGameNotificationAction);
 	}
 		
 
@@ -69,7 +69,32 @@ public class RPlayerController : NetworkBehaviour {
 		
 			CmdChangeTurn ();
 
+			foreach (KeyValuePair<string, Square> keyValue in gameController.game.squareDictionary) {
+				string key = keyValue.Key;
+				Square value = keyValue.Value;
 
+				bool squareOccupied = value.squareOccupied;
+				Mark allegiance;
+				string coords;
+				int strength;
+				UnitType unitType;
+
+				if (squareOccupied) {
+					 allegiance = value.unitOccupyingSquare.allegiance;
+					 coords = value.unitOccupyingSquare.coords;
+					 strength = value.unitOccupyingSquare.strength;
+					 unitType = value.unitOccupyingSquare.unitType;
+				} else {
+					 allegiance = Mark.None;
+					 coords = key;
+					 strength = 0;
+					 unitType = UnitType.None;
+				}
+
+				CmdBroadcastSquareDictionary (key, squareOccupied, allegiance, coords, strength, unitType);
+				//Debug.Log ("Game.LoopThroughUnitDictionary: coords are " + key + " and unit occupying square is " + value.squareOccupied);
+			} 
+			//CmdBroadcastSquareDictionary (gameController.game.squareDictionary);
 		}
 	}
 
@@ -83,10 +108,40 @@ public class RPlayerController : NetworkBehaviour {
 		gameController.game.ChangeTurn();
 
 	}
-		
 
 	[Command]
-	void CmdDefineStartPositions(){
+	void CmdBroadcastSquareDictionary(string key, bool squareOccupied, Mark allegiance, string coords, int strength, UnitType unitType){
+		RpcBroadcastSquareDictionary (key, squareOccupied, allegiance, coords, strength, unitType);
+	}
+
+	[ClientRpc]
+	void RpcBroadcastSquareDictionary (string key, bool squareOccupied, Mark allegiance, string coords, int strength, UnitType unitType){
+
+		//gameController.game.squareDictionary [key].squareOccupied = squareOccupied;
+
+		if (squareOccupied) {
+			gameController.game.squareDictionary [key].squareOccupied = true;
+			gameController.game.squareDictionary [key].unitOccupyingSquare = new RUnit (); 
+			gameController.game.squareDictionary [key].unitOccupyingSquare.allegiance = allegiance;
+			gameController.game.squareDictionary [key].unitOccupyingSquare.coords = coords;
+			gameController.game.squareDictionary [key].unitOccupyingSquare.strength = strength;
+			gameController.game.squareDictionary [key].unitOccupyingSquare.unitType = unitType;
+
+		} else if(gameController.game.squareDictionary[key].squareOccupied) {
+			
+			gameController.game.squareDictionary [key].squareOccupied = false;
+			gameController.game.squareDictionary [key].unitOccupyingSquare.allegiance = allegiance;
+			gameController.game.squareDictionary [key].unitOccupyingSquare.coords = coords;
+			gameController.game.squareDictionary [key].unitOccupyingSquare.strength = strength;
+			gameController.game.squareDictionary [key].unitOccupyingSquare.unitType = unitType;
+		}
+			
+
+		gameController.RefreshBoard (null);
+	}
+
+	[Command]
+		void CmdDefineStartPositions(){
 		bool conThreeOrTwoArmies = Random.value < 0.5;
 		bool usThreeOrTwoArmies = Random.value < 0.5;
 

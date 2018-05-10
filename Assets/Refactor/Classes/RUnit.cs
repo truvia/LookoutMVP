@@ -10,7 +10,7 @@ public class RUnit : MonoBehaviour {
 	public Mark allegiance;
 	public string coords;
 	bool startMoving = false;
-
+	public int numMoves = 0;
 
 	private float moveTowardsX;
 	private float moveTowardsz;
@@ -20,6 +20,7 @@ public class RUnit : MonoBehaviour {
 
 	void Start () {
 		
+
 	}
 	
 	// Update is called once per frame

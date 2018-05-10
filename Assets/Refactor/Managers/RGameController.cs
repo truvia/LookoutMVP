@@ -15,8 +15,11 @@ public class RGameController : NetworkBehaviour {
 
 	private RBoard board;
 	private RSelector selector;
-	private Display display;
+	private UIController uiController;
 
+
+	private RUnit mergeUnit;
+	private GameObject originalPiece;
 	// Use this for initialization
 
 	public RGame game = new RGame();
@@ -29,7 +32,7 @@ public class RGameController : NetworkBehaviour {
 		didStartLocalPlayerNotificationAction = new UnityAction<System.Object> (IdentifyLocalPlayer);
 		board = FindObjectOfType<RBoard> ();
 		selector = FindObjectOfType<RSelector> ();
-		display = FindObjectOfType<Display> ();
+		uiController = FindObjectOfType<UIController> ();
 
 	}
 
@@ -47,7 +50,7 @@ public class RGameController : NetworkBehaviour {
 		EventManager.StopListening (RPlayerController.DidStartLocalPlayer, didStartLocalPlayerNotificationAction);
 	}
 
-	void RefreshBoard(object obj){
+	public void RefreshBoard(object obj){
 		DestroyAllUnits ();
 		//Debug.Log ("GameController . Refresh Board Called");
 	
@@ -60,6 +63,8 @@ public class RGameController : NetworkBehaviour {
 			if (value.squareOccupied != false) {
 				//Debug.Log ("coords are : " + key + " and square unit is " + value.unitOccupyingSquare.allegiance);
 				int[] coords = ConvertStringToArray (key, 2);
+
+				//create unit and sync its values
 				board.Place (coords, value.unitOccupyingSquare.allegiance, value.unitOccupyingSquare);
 
 			}
@@ -93,9 +98,17 @@ public class RGameController : NetworkBehaviour {
 					//there is a piece at this location in the square dictionary and it is my allegiance;
 					if (selector.pieceAtThisCoord) {
 						//to prevent a bounceback if there is no piece at this coord
+						uiController.ShowHUD(uiController.UnitHUD);
 						selector.SelectPiece (selector.pieceAtThisCoord);
-						board.ShowPossibleSquares (intCoords, selector.pieceAtThisCoord.GetComponent<RUnit> ());
 
+						if (selector.pieceAtThisCoord.GetComponent<RUnit> ().numMoves > 0) {
+						
+						
+							board.ShowPossibleSquares (intCoords, selector.pieceAtThisCoord.GetComponent<RUnit> ());
+
+						} else {
+							Debug.Log ("You don't have enough moves left for this piece");
+						}
 					} else {
 						Debug.Log (this + " says that there is no selector.pieceAtThiscoord");	
 					
@@ -106,38 +119,36 @@ public class RGameController : NetworkBehaviour {
 		} else {
 			// A piece is currently selected
 
-			foreach (int[] intArray in board.possibleMovementCoords) {
+			for (int i =0; i<board.possibleMovementCoords.Count; i++){
+				int[] intArray = board.possibleMovementCoords [i];
 				if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
 					//Move piece to location
 					Debug.Log("Move piece requested");
 					game.MovePiece (selector.selectedPiece.GetComponent<RUnit> ().coords, stringCoords);
 					selector.PlacePiece (stringCoords);
+					uiController.HideHUD (uiController.UnitHUD);
 					board.ClearAllSelectorSquares ();
 
 				}
 			}
 
-			foreach (int[] intArray in board.mergeableSquareCoords) {
+			for(int i = 0; i < board.mergeableSquareCoords.Count; i++){
+
+				int[] intArray = board.mergeableSquareCoords [i];
 				if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
-					//prompt merge square
-					Debug.Log("merge piece requested");
-					//prompt mergesquare;
+					//Debug.Log("merge piece requested");
 
-					RUnit mergeUnit = game.squareDictionary [stringCoords].unitOccupyingSquare;
-					GameObject originalPiece = selector.pieceAtThisCoord;
+					mergeUnit = game.squareDictionary [stringCoords].unitOccupyingSquare;
+					//Debug.Log (mergeUnit.coords + " merge unit coords are this and is there a unit occupying square? " + game.squareDictionary[stringCoords].squareOccupied + " and stringcoords are " + stringCoords);
+					originalPiece = selector.selectedPiece;
 
-					display.TestMerge (originalPiece, mergeUnit);
-					display.ShowHUD (display.MergeUnitHUD);
-					//if they say that it is fine
-					  
-//					if (display.mergetrue) {
-//						
-//					}
+					PromptUser ();
 
 				}
 			}
+			for(int i = 0; i <board.battleSquareCoords.Count; i++){
+				int[] intArray = board.battleSquareCoords [i];
 
-			foreach (int[] intArray in board.battleSquareCoords) {
 				if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
 					//Prompt do battle
 					Debug.Log("do battle requested");
@@ -215,12 +226,48 @@ public class RGameController : NetworkBehaviour {
 		foreach (RUnit thisUnit in allUnits) {
 			if (thisUnit.coords == unitToFind.coords) {
 				return thisUnit.gameObject;
+
 			}
 		}
 		return null;
 	}
 
+	public void PromptUser(){
+		uiController.WaitForUser("Do you want to merge units of strength " + originalPiece.GetComponent<RUnit>().strength + " and  new unit " + mergeUnit.strength + "?", new UnityAction ( () => {
+			uiController.MergeUnits();
+		}), new UnityAction( () => {
+			uiController.CancelInput();
+		}));
+	}
 
+	public void MergeUnits(){
+		//Something is wrong with the mergeunit as the coords are the original position not the updated position;
+		//Debug.Log("game controller says merge units at " + originalPiece.GetComponent<RUnit>().coords + " , and the mergebble piece at " + mergeUnit.coords);	
+		GameObject gameObjectOfMergeUnit = FindUnitByUnitDictionary (mergeUnit);
+		gameObjectOfMergeUnit.GetComponent<RUnit> ().strength += originalPiece.GetComponent<RUnit> ().strength;
+		game.MergePiece (originalPiece.GetComponent<RUnit> ().coords, mergeUnit.coords);
+
+		uiController.HideHUD (uiController.UnitHUD);
+		selector.KillSelectedPiece ();
+		board.ClearAllSelectorSquares ();
+		//Merge Units
+
+		GameObject gameObject = new GameObject ();
+
+	
+	}
+
+
+	public void SyncSceneUnitToDictionaryUnit(RUnit squareDictionaryRUnit, GameObject unitInScene){
+		RUnit unitInSceneRUnit = unitInScene.GetComponent<RUnit> ();
+
+		unitInSceneRUnit.allegiance = squareDictionaryRUnit.allegiance;
+		unitInSceneRUnit.coords = squareDictionaryRUnit.coords;
+		unitInSceneRUnit.numMoves = squareDictionaryRUnit.numMoves;
+		unitInSceneRUnit.strength = squareDictionaryRUnit.strength;
+		unitInSceneRUnit.unitType = squareDictionaryRUnit.unitType;
+
+	}
 
 
 }

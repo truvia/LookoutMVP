@@ -42,6 +42,7 @@ public class RArmySpawner : NetworkBehaviour {
 		newUnit.GetComponent<RUnit> ().unitType = unit.unitType;
 		newUnit.GetComponent<RUnit> ().strength = unit.strength;
 		newUnit.GetComponent<RUnit> ().coords = (location.x - 0.5) + " , " + (location.z - 0.5);
+		newUnit.GetComponent<RUnit> ().numMoves = unit.numMoves;
 		//NetworkServer.Spawn (newUnit);
 	}
 
