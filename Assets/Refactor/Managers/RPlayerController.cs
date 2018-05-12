@@ -78,20 +78,30 @@ public class RPlayerController : NetworkBehaviour {
 				string coords;
 				int strength;
 				UnitType unitType;
+				int numMoves;
 
 				if (squareOccupied) {
 					 allegiance = value.unitOccupyingSquare.allegiance;
 					 coords = value.unitOccupyingSquare.coords;
 					 strength = value.unitOccupyingSquare.strength;
 					 unitType = value.unitOccupyingSquare.unitType;
+
+					if (value.unitOccupyingSquare.unitType == UnitType.Army) {
+						numMoves = 1;
+					} else if (value.unitOccupyingSquare.unitType == UnitType.Spy) {
+						numMoves = 2;
+					} else {
+						numMoves = 0;
+					}
 				} else {
 					 allegiance = Mark.None;
 					 coords = key;
 					 strength = 0;
 					 unitType = UnitType.None;
+					numMoves = 0;
 				}
 
-				CmdBroadcastSquareDictionary (key, squareOccupied, allegiance, coords, strength, unitType);
+				CmdBroadcastSquareDictionary (key, squareOccupied, allegiance, coords, strength, unitType, numMoves);
 				//Debug.Log ("Game.LoopThroughUnitDictionary: coords are " + key + " and unit occupying square is " + value.squareOccupied);
 			} 
 			//CmdBroadcastSquareDictionary (gameController.game.squareDictionary);
@@ -110,12 +120,12 @@ public class RPlayerController : NetworkBehaviour {
 	}
 
 	[Command]
-	void CmdBroadcastSquareDictionary(string key, bool squareOccupied, Mark allegiance, string coords, int strength, UnitType unitType){
-		RpcBroadcastSquareDictionary (key, squareOccupied, allegiance, coords, strength, unitType);
+	void CmdBroadcastSquareDictionary(string key, bool squareOccupied, Mark allegiance, string coords, int strength, UnitType unitType, int numMoves){
+		RpcBroadcastSquareDictionary (key, squareOccupied, allegiance, coords, strength, unitType, numMoves);
 	}
 
 	[ClientRpc]
-	void RpcBroadcastSquareDictionary (string key, bool squareOccupied, Mark allegiance, string coords, int strength, UnitType unitType){
+	void RpcBroadcastSquareDictionary (string key, bool squareOccupied, Mark allegiance, string coords, int strength, UnitType unitType, int numMoves){
 
 		//gameController.game.squareDictionary [key].squareOccupied = squareOccupied;
 
@@ -126,7 +136,7 @@ public class RPlayerController : NetworkBehaviour {
 			gameController.game.squareDictionary [key].unitOccupyingSquare.coords = coords;
 			gameController.game.squareDictionary [key].unitOccupyingSquare.strength = strength;
 			gameController.game.squareDictionary [key].unitOccupyingSquare.unitType = unitType;
-
+			gameController.game.squareDictionary [key].unitOccupyingSquare.numMoves = numMoves;
 		} else if(gameController.game.squareDictionary[key].squareOccupied) {
 			
 			gameController.game.squareDictionary [key].squareOccupied = false;
@@ -134,6 +144,7 @@ public class RPlayerController : NetworkBehaviour {
 			gameController.game.squareDictionary [key].unitOccupyingSquare.coords = coords;
 			gameController.game.squareDictionary [key].unitOccupyingSquare.strength = strength;
 			gameController.game.squareDictionary [key].unitOccupyingSquare.unitType = unitType;
+			gameController.game.squareDictionary [key].unitOccupyingSquare.numMoves = numMoves;
 		}
 			
 

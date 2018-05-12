@@ -311,7 +311,7 @@ GameObject:
   - component: {fileID: 74802912}
   - component: {fileID: 74802911}
   m_Layer: 5
-  m_Name: Strength (1)
+  m_Name: Moves
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -668,6 +668,9 @@ MonoBehaviour:
   EndTurnButton: {fileID: 695741661}
   controlText: {fileID: 5224689}
   strengthText: {fileID: 1463001508}
+  unitHUDStrength: {fileID: 180891191}
+  unitHUDType: {fileID: 1554404593}
+  unitHUDMoves: {fileID: 74802911}
   myYesButton: {fileID: 1101658234}
   myNoButton: {fileID: 680222823}
 --- !u!1 &201052895
@@ -2916,7 +2919,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1463001508
 MonoBehaviour:
   m_ObjectHideFlags: 0

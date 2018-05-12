@@ -65,7 +65,7 @@ public class RGameController : NetworkBehaviour {
 				int[] coords = ConvertStringToArray (key, 2);
 
 				//create unit and sync its values
-				board.Place (coords, value.unitOccupyingSquare.allegiance, value.unitOccupyingSquare);
+				board.Place (value.unitOccupyingSquare);
 
 			}
 
@@ -94,19 +94,22 @@ public class RGameController : NetworkBehaviour {
 			//if no piece is currently selected
 
 			if (game.squareDictionary [stringCoords].squareOccupied) {
-				if (game.squareDictionary [stringCoords].unitOccupyingSquare.allegiance == localPlayerController.myAllegiance) {
+				RUnit unit = game.squareDictionary[stringCoords].unitOccupyingSquare;
+				if (unit.allegiance == localPlayerController.myAllegiance) {
 					//there is a piece at this location in the square dictionary and it is my allegiance;
 					if (selector.pieceAtThisCoord) {
 						//to prevent a bounceback if there is no piece at this coord
-						uiController.ShowHUD(uiController.UnitHUD);
-						selector.SelectPiece (selector.pieceAtThisCoord);
 
-						if (selector.pieceAtThisCoord.GetComponent<RUnit> ().numMoves > 0) {
-						
-						
-							board.ShowPossibleSquares (intCoords, selector.pieceAtThisCoord.GetComponent<RUnit> ());
+						uiController.SetUnitHUDValues(unit);
+						uiController.ShowHUD(uiController.UnitHUD);
+
+
+						if (unit.numMoves > 0) {
+							selector.SelectPiece (selector.pieceAtThisCoord);												
+							board.ShowPossibleSquares (intCoords, unit);
 
 						} else {
+							StartCoroutine (uiController.MakeTextFlashRed (uiController.unitHUDMoves));
 							Debug.Log ("You don't have enough moves left for this piece");
 						}
 					} else {
@@ -118,13 +121,14 @@ public class RGameController : NetworkBehaviour {
 
 		} else {
 			// A piece is currently selected
+			RUnit squareDictionarySelectedPiece = game.squareDictionary[selector.selectedPiece.GetComponent<RUnit>().coords].unitOccupyingSquare;
 
 			for (int i =0; i<board.possibleMovementCoords.Count; i++){
 				int[] intArray = board.possibleMovementCoords [i];
 				if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
 					//Move piece to location
 					Debug.Log("Move piece requested");
-					game.MovePiece (selector.selectedPiece.GetComponent<RUnit> ().coords, stringCoords);
+					game.MovePiece (squareDictionarySelectedPiece, stringCoords);
 					selector.PlacePiece (stringCoords);
 					uiController.HideHUD (uiController.UnitHUD);
 					board.ClearAllSelectorSquares ();
@@ -150,8 +154,24 @@ public class RGameController : NetworkBehaviour {
 				int[] intArray = board.battleSquareCoords [i];
 
 				if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
-					//Prompt do battle
-					Debug.Log("do battle requested");
+					RUnit defender = game.squareDictionary [stringCoords].unitOccupyingSquare;
+					RUnit attacker = squareDictionarySelectedPiece;
+					bool attackerWin = game.DoBattle (attacker, defender);
+				
+					if (attackerWin) {
+						DestroyUnitByUnitDictionary (defender);
+						DestroyUnitByUnitDictionary (attacker);
+
+						board.Place (attacker);
+						SyncSceneUnitToDictionaryUnit (attacker, FindUnitByUnitDictionary(attacker));
+
+					} else {
+						DestroyUnitByUnitDictionary (attacker);
+						SyncSceneUnitToDictionaryUnit (defender, FindUnitByUnitDictionary(defender));
+					}
+					
+					Debug.Log ("done battle"); 
+
 				}
 			}
 			// a piece is currently selected
@@ -168,7 +188,6 @@ public class RGameController : NetworkBehaviour {
 		Debug.Log ("Identify Local Player called");
 		RPlayerController playerController = (RPlayerController)obj;
 		localPlayerController = playerController;
-
 	}
 
 	public int[] ConvertStringToArray(string s, int numberOfCoordinates){
@@ -261,6 +280,7 @@ public class RGameController : NetworkBehaviour {
 	public void SyncSceneUnitToDictionaryUnit(RUnit squareDictionaryRUnit, GameObject unitInScene){
 		RUnit unitInSceneRUnit = unitInScene.GetComponent<RUnit> ();
 
+
 		unitInSceneRUnit.allegiance = squareDictionaryRUnit.allegiance;
 		unitInSceneRUnit.coords = squareDictionaryRUnit.coords;
 		unitInSceneRUnit.numMoves = squareDictionaryRUnit.numMoves;
@@ -268,6 +288,8 @@ public class RGameController : NetworkBehaviour {
 		unitInSceneRUnit.unitType = squareDictionaryRUnit.unitType;
 
 	}
+
+
 
 
 }

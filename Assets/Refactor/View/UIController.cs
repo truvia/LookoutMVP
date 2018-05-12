@@ -15,6 +15,10 @@ public class UIController : MonoBehaviour {
 	public Text controlText;
 	public Text strengthText;
 
+	public Text unitHUDStrength;
+	public Text unitHUDType;
+	public Text unitHUDMoves;
+
 
 	private RGameController gameController;
 	private MyNetworkManager myNetworkManager;
@@ -56,6 +60,7 @@ public class UIController : MonoBehaviour {
 
 		}
 		controlText.text = gameController.game.control.ToString();
+
 		strengthText.text = gameController.game.conArmiesStartLocationStrengths [0].ToString () + " , " + gameController.game.conArmiesStartLocationStrengths [1].ToString () + " , " + gameController.game.conArmiesStartLocationStrengths [2].ToString () + " , " + gameController.game.uSAArmiesStartLocationStrengths [0].ToString () + " , " + gameController.game.uSAArmiesStartLocationStrengths [1].ToString () + " , " + gameController.game.uSAArmiesStartLocationStrengths [2].ToString ();
 
 	}
@@ -122,11 +127,26 @@ public class UIController : MonoBehaviour {
 		myYesButton.onClick.AddListener (myYesButtonPressed);
 		myNoButton.onClick.AddListener (myNoButtonPressed);
 	}
+
+
+	public void SetUnitHUDValues(RUnit unit){
+		unitHUDType.text = unit.unitType.ToString ();
+		unitHUDStrength.text = "Strength: " + unit.strength.ToString ();
+		unitHUDMoves.text = "Moves Left: " + unit.numMoves.ToString ();
 		
+	}
+	//DeV options
 	public void PrintUnitDictionary(){
 		gameController.game.LoopThroughUnitDictionary ();
 	}
-		
+
+	public IEnumerator MakeTextFlashRed(Text text){
+		text.color = Color.red;
+		yield return new WaitForSeconds (.3f);
+		text.color = Color.black;
+	}
+
+
 
 }
 

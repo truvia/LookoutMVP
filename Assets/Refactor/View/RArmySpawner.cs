@@ -13,10 +13,13 @@ public class RArmySpawner : NetworkBehaviour {
 	public int NumPrepopulate;
 	public int MaxNum;
 
+	private RGameController gameController;
 
 	//	private Queue<GameObject> armyQueue = new Queue<GameObject>();
 	//	private Army[] armies;
-
+	void Start(){
+		gameController = FindObjectOfType<RGameController> ();
+	}
 
 	public void InstantiatePrefab(Vector3 location, RUnit unit){
 		GameObject newGameObject;
@@ -38,11 +41,13 @@ public class RArmySpawner : NetworkBehaviour {
 
 
 		newUnit.AddComponent<RUnit> ();
-		newUnit.GetComponent<RUnit> ().allegiance = unit.allegiance;
-		newUnit.GetComponent<RUnit> ().unitType = unit.unitType;
-		newUnit.GetComponent<RUnit> ().strength = unit.strength;
-		newUnit.GetComponent<RUnit> ().coords = (location.x - 0.5) + " , " + (location.z - 0.5);
-		newUnit.GetComponent<RUnit> ().numMoves = unit.numMoves;
+
+		gameController.SyncSceneUnitToDictionaryUnit (unit, newUnit);
+//		newUnit.GetComponent<RUnit> ().allegiance = unit.allegiance;
+//		newUnit.GetComponent<RUnit> ().unitType = unit.unitType;
+//		newUnit.GetComponent<RUnit> ().strength = unit.strength;
+//		newUnit.GetComponent<RUnit> ().coords = (location.x - 0.5) + " , " + (location.z - 0.5);
+//		newUnit.GetComponent<RUnit> ().numMoves = unit.numMoves;
 		//NetworkServer.Spawn (newUnit);
 	}
 

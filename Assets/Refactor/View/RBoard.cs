@@ -26,9 +26,9 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 		gameController = FindObjectOfType<RGameController> ();
 	}
 
-	public void Place(int[] coords, Mark allegiance, RUnit unit){
-		
-		RArmySpawner armySpawner = allegiance == Mark.CON ? CONArmySpawner : USArmySpawner;
+	public void Place(RUnit unit){
+		int[] coords = gameController.ConvertStringToArray (unit.coords, 2);
+		RArmySpawner armySpawner = unit.allegiance == Mark.CON ? CONArmySpawner : USArmySpawner;
 		Vector3 location = new Vector3 (coords [0] + 0.5f, 0.05f, coords [1] + 0.5f);
 		armySpawner.InstantiatePrefab (location, unit);
 	}
@@ -53,7 +53,7 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 	}
 
 
-	public void ShowPossibleSquares(int[] coords, RUnit unit){
+	public void ShowPossibleSquares(int[] intCoords, RUnit unit){
 		//Debug.Log ("Show Possible Squares called");
 		ClearAllSelectorSquares ();
 		GameObject selectionSquare;
@@ -65,12 +65,12 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 				for (int z = -1; z <= 1; z++) {
 					Vector3 selectorCoord = new Vector3 ();
 
-					selectorCoord.x = coords [0] + x + 0.5f;
-					selectorCoord.z = coords [1] + z + 0.5f;
+					selectorCoord.x = intCoords [0] + x + 0.5f;
+					selectorCoord.z = intCoords [1] + z + 0.5f;
 
-					int[] newCoords = new int[]{ coords[0] + x, coords[1] + z};
+					int[] positionCoords = new int[]{ intCoords[0] + x, intCoords[1] + z};
 
-					string coordsAsString = gameController.ConvertArrayToString (newCoords);
+					string coordsAsString = gameController.ConvertArrayToString (positionCoords);
 
 					if (selectorCoord.x < 0.5f || selectorCoord.z < 0.5f || selectorCoord.x > gameController.game.boardWidth || selectorCoord.z > gameController.game.boardHeight) {
 						// don't instantiate out of range ie. do nothing (return cancels the loop)
@@ -83,19 +83,19 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 								//stops a blue square forming on original position;
 								selectionSquare = blueSelectionSquarePrefab;
 
-								mergeableSquareCoords.Add (newCoords);
+								mergeableSquareCoords.Add (positionCoords);
 								GameObject newUnit = Instantiate (selectionSquare, selectorCoord, Quaternion.identity, selectionSquaresSpawner);
 								newUnit.tag = "selectorSquare";
 							} else {
 								//if we want to instantiate a special square that says where it came from.
 							}
 						} else if (gameController.game.squareDictionary [coordsAsString].unitOccupyingSquare.allegiance == unit.allegiance && gameController.game.squareDictionary [coordsAsString].unitOccupyingSquare.unitType == UnitType.Fortress) {
-							//Do nothing
+							//If the unit in that space is a fortress of my allegiance then do nothing
 						 
 						}else{
 							//if it is an enemy unit there
 							selectionSquare = redSelectionSquarePrefab;
-							battleSquareCoords.Add (newCoords);
+							battleSquareCoords.Add (positionCoords);
 							GameObject newUnit = Instantiate(selectionSquare, selectorCoord, Quaternion.identity, selectionSquaresSpawner);
 							newUnit.tag = "selectorSquare";
 						}
@@ -103,11 +103,11 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 
 					}
 						else {
-							//there is no unit there
+							//there is no unit there and it is a moveable square
 						selectionSquare = greenSelectionSquarePrefab;
 						GameObject newUnit = Instantiate (selectionSquare, selectorCoord, Quaternion.identity, selectionSquaresSpawner);
 						newUnit.tag = "selectorSquare";
-						possibleMovementCoords.Add (newCoords);
+						possibleMovementCoords.Add (positionCoords);
 
 						}
 						

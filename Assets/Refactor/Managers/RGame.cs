@@ -194,16 +194,15 @@ namespace RLookout{
 			} 
 		}
 
-		public void MovePiece(string selectedPieceCoords, string squareClickedCoords){
-				
-			squareDictionary [squareClickedCoords].unitOccupyingSquare = squareDictionary [selectedPieceCoords].unitOccupyingSquare;
-			squareDictionary [squareClickedCoords].squareOccupied = true;
-			squareDictionary [squareClickedCoords].unitOccupyingSquare.coords = squareClickedCoords;
+		public void MovePiece(RUnit pieceToMove, string coordsToMoveTo){
+			string originalCoords = pieceToMove.coords;
+			squareDictionary [coordsToMoveTo].unitOccupyingSquare = pieceToMove;
+			squareDictionary [coordsToMoveTo].squareOccupied = true;
+			squareDictionary [coordsToMoveTo].unitOccupyingSquare.coords = coordsToMoveTo;
+			squareDictionary [coordsToMoveTo].unitOccupyingSquare.numMoves -= 1;
 
-			squareDictionary [squareClickedCoords].unitOccupyingSquare.numMoves -= 1;
-
-			squareDictionary [selectedPieceCoords].unitOccupyingSquare = null;
-			squareDictionary [selectedPieceCoords].squareOccupied = false;
+			squareDictionary[originalCoords].unitOccupyingSquare = null;
+			squareDictionary [originalCoords].squareOccupied = false;
 			//Debug.Log ("Unit has been moved from " + selectedPieceCoords + " to " + squareClickedCoords + " and this is confirmed in the squareDictionary because the new square we clicked on has this unit on it " + squareDictionary [squareClickedCoords].unitOccupyingSquare + " and the original square is now empty (false if true) " + squareDictionary [selectedPieceCoords].squareOccupied);
 		}
 
@@ -216,8 +215,66 @@ namespace RLookout{
 			squareDictionary [coordsOfPieceToMergeWith].unitOccupyingSquare.strength += squareDictionary [coordsOfOriginalPiece].unitOccupyingSquare.strength;
 			DestroyPiece (coordsOfOriginalPiece);
 		}
+
+		public bool DoBattle(RUnit attacker, RUnit defender){
+			
+			bool AttackerWin = false;
+			string attackerCoords = attacker.coords;
+			string defenderCoords = defender.coords;
+
+			//Debug.Log ("attacker strength is " + unitDictionary [attackercoords].strength + " defender strength is " + unitDictionary [defendercoorrds].strength);
+
+			int actOfGodRandomizer = Mathf.FloorToInt (Random.Range (0f, 100f));
+
+
+			if (actOfGodRandomizer != 1) {
+
+				float attackAdvantageMultiplier = 1;
+				float defenceAdvantageMultiplier = 4 / 3;
+				float attackerStrength = attacker.strength;
+				float defenderStrength = defender.strength;
+
+				float attackerOdds = 0.5f * (attackerStrength / defenderStrength) * attackAdvantageMultiplier;
+				float defenderOdds = 0.5f * (defenderStrength / attackerStrength) * defenceAdvantageMultiplier;
+
+				Debug.Log ("Attacker to defender strength ratio is " + attackerStrength + " : " + defenderStrength);
+				Debug.Log ("Attacker odds to defender odds is " + attackerOdds + " : " + defenderOdds);
+
+				if (attackerOdds > defenderOdds) {
+					float newFloat = defenderOdds / attackerOdds;
+					int newStrength = Mathf.RoundToInt(attackerStrength * (1 - newFloat));
+
+					Debug.Log ("attacker loss is " + (attackerStrength - newStrength));
+
+					attacker.strength = newStrength;
+					Debug.Log("attacker strength is now " + attacker.strength + " but the square dictionary strength is now" + squareDictionary[attacker.coords].unitOccupyingSquare.strength);
+
+					DestroyPiece (defender.coords);
+					Debug.Log (" is the defender destroyed?" + defender.coords);
+					MovePiece (attacker, defenderCoords);
+
+					AttackerWin = true;
+				} else {
+					float newFloat = attackerOdds / defenderOdds;
+					int newStrength = Mathf.RoundToInt(defenderStrength * (1 - newFloat));
+					Debug.Log ("defender loss is " + (defenderStrength - newStrength));
+
+					defender.strength = newStrength;
+
+					DestroyPiece (attacker.coords);
+					Debug.Log("defender strength is now " + defender.strength + " but the square dictionary strength is now" + squareDictionary[defender.coords].unitOccupyingSquare.strength);
+					AttackerWin = false;
+				}
+
+			} else {
+				AttackerWin = true;
+			}
+
+			return AttackerWin;
+		}
+
+		}
 	
 
 	}
-
-}
+	
