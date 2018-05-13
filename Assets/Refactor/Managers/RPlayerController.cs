@@ -15,6 +15,7 @@ public class RPlayerController : NetworkBehaviour {
 	public Mark myAllegiance;
 	private RGameController gameController;
 	private UnityAction<System.Object> endTurnRequestNotification;
+	private UnityAction<System.Object> didEndGameNotificationAction;
 
 	//Developer Only Listeners
 	private UnityAction<System.Object> didRequestResetGameNotificationAction;
@@ -27,17 +28,19 @@ public class RPlayerController : NetworkBehaviour {
 			//Listeners - what methods should listen to the notification
 		endTurnRequestNotification = new UnityAction<System.Object> (ChangeTurn); //defines what action that this object should take when the event is triggered
 		didRequestResetGameNotificationAction = new UnityAction<System.Object>(RequestResetGame);
+		didEndGameNotificationAction = new UnityAction<System.Object> (EndGame);
 	}
 
 	void OnEnable(){
 		EventManager.StartListening(UIController.DidRequestEndTurn, endTurnRequestNotification); 
-
+		EventManager.StartListening (RGame.DidEndGameNotification, didEndGameNotificationAction);
 		//Developer area
 		EventManager.StartListening(UIController.DidRequestResetGame, didRequestResetGameNotificationAction);
 	}
 
 	void OnDisable(){
 		EventManager.StopListening(UIController.DidRequestEndTurn, endTurnRequestNotification);	
+		EventManager.StopListening (RGame.DidEndGameNotification, didEndGameNotificationAction);
 		EventManager.StopListening (UIController.DidRequestResetGame, didRequestResetGameNotificationAction);
 	}
 		
@@ -106,6 +109,22 @@ public class RPlayerController : NetworkBehaviour {
 			} 
 			//CmdBroadcastSquareDictionary (gameController.game.squareDictionary);
 		}
+	}
+
+	void EndGame(object args){
+		Mark winner = (Mark)args;
+
+		CmdEndGame (winner);
+	}
+
+	[Command]
+	void CmdEndGame(Mark winner){
+		RpcEndGame (winner);
+	}
+
+	[ClientRpc]
+	void RpcEndGame(Mark winner){
+		gameController.EndGame (winner);
 	}
 
 	[Command]

@@ -92,7 +92,7 @@ public class RGameController : NetworkBehaviour {
 		int[] intCoords = (int[]) args; 
 		string stringCoords = ConvertArrayToString (intCoords);
 
-		if (unitSelected ==  false) {
+		if (unitSelected == false) {
 			//if no piece is currently selected
 //
 //			if (game.squareDictionary [stringCoords].squareOccupied) {
@@ -120,85 +120,89 @@ public class RGameController : NetworkBehaviour {
 
 		} else {
 			// A piece is currently selected
-		//	RUnit squareDictionarySelectedPiece = game.squareDictionary[selectedUnit.GetComponent<RUnit>().coords].unitOccupyingSquare;
-			Debug.Log(" a piece is selected");
-			for (int i =0; i<board.possibleMovementCoords.Count; i++){
-				int[] intArray = board.possibleMovementCoords [i];
-				if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
-					//Move piece to location
-					Debug.Log("Move piece requested" + selectedUnit + " blah " + " " + selectedUnit.allegiance);
+			//	RUnit squareDictionarySelectedPiece = game.squareDictionary[selectedUnit.GetComponent<RUnit>().coords].unitOccupyingSquare;
+			if (game.control == localPlayerController.myAllegiance) {
+				Debug.Log (" a piece is selected");
+				for (int i = 0; i < board.possibleMovementCoords.Count; i++) {
+					int[] intArray = board.possibleMovementCoords [i];
+					if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
+						//Move piece to location
+						Debug.Log ("Move piece requested" + selectedUnit + " blah " + " " + selectedUnit.allegiance);
 
 
-					GameObject gameObjectRunitOfSelectedPiece = FindUnitByUnitDictionary (selectedUnit);
-					board.MovePiece (selectedGameObject, intCoords);
-					game.MovePiece (selectedUnit, stringCoords);
-					SyncSceneUnitToDictionaryUnit (selectedUnit, selectedGameObject);
-					unitSelected = false;
-					selectedUnit = null;
-					selectedGameObject = null;
-					//selector.PlacePiece ();
-				
-					uiController.HideHUD (uiController.UnitHUD);
-					board.ClearAllSelectorSquares ();
-
-				}
-			}
-
-			for(int i = 0; i < board.mergeableSquareCoords.Count; i++){
-
-				int[] intArray = board.mergeableSquareCoords [i];
-				if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
-					//Debug.Log("merge piece requested");
-
-					mergeUnit = game.squareDictionary [stringCoords].unitOccupyingSquare;
-					//Debug.Log (mergeUnit.coords + " merge unit coords are this and is there a unit occupying square? " + game.squareDictionary[stringCoords].squareOccupied + " and stringcoords are " + stringCoords);
-					//originalPiece = selector.selectedPiece;
-					if (selectedUnit.numMoves > 0 && mergeUnit.numMoves > 0) {
-
-						PromptUser ();
-					} else {
-						uiController.SetBasicInfoText ("Both units don't have enough moves to merge!", "Sorry!");
-						uiController.ShowHUD (uiController.BasicInfoPopup);
-					}
-				}
-			}
-			for(int i = 0; i <board.battleSquareCoords.Count; i++){
-				int[] intArray = board.battleSquareCoords [i];
-				//soomething is going wrong with the slector piece at this coord; it basically isn't destroying and then places itself back after a battle. This presu
-				if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
-					RUnit defender = game.squareDictionary [stringCoords].unitOccupyingSquare;
-					RUnit attacker = selectedUnit;
-					bool attackerWin = game.DoBattle (attacker, defender);
-				
-					if (attackerWin) {
-						uiController.SetBasicInfoText ("You won! Congratulations!", "Okay");
-						uiController.ShowHUD (uiController.BasicInfoPopup);
-						DestroyUnitByUnitDictionary (defender);
+						GameObject gameObjectRunitOfSelectedPiece = FindUnitByUnitDictionary (selectedUnit);
 						board.MovePiece (selectedGameObject, intCoords);
+						game.MovePiece (selectedUnit, stringCoords);
+						SyncSceneUnitToDictionaryUnit (selectedUnit, selectedGameObject);
+						unitSelected = false;
+						selectedUnit = null;
+						selectedGameObject = null;
 						//selector.PlacePiece ();
-						//DestroyUnitByUnitDictionary (attacker);
+				
+						uiController.HideHUD (uiController.UnitHUD);
+						board.ClearAllSelectorSquares ();
+						game.CheckForGameOver ();
 
-						//board.Place (attacker);
-						SyncSceneUnitToDictionaryUnit (attacker, selectedGameObject);
-
-					} else {
-						uiController.SetBasicInfoText ("Oh no, you lost", "Dammit");
-						uiController.ShowHUD (uiController.BasicInfoPopup);
-						DestroyUnitByUnitDictionary (attacker);
-						SyncSceneUnitToDictionaryUnit (defender, FindUnitByUnitDictionary(defender));
 					}
-					board.ClearAllSelectorSquares ();
-					Debug.Log ("done battle"); 
-					unitSelected = false;
-					selectedUnit = null;
 				}
-			}
-			// a piece is currently selected
+
+				for (int i = 0; i < board.mergeableSquareCoords.Count; i++) {
+
+					int[] intArray = board.mergeableSquareCoords [i];
+					if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
+						//Debug.Log("merge piece requested");
+
+						mergeUnit = game.squareDictionary [stringCoords].unitOccupyingSquare;
+						//Debug.Log (mergeUnit.coords + " merge unit coords are this and is there a unit occupying square? " + game.squareDictionary[stringCoords].squareOccupied + " and stringcoords are " + stringCoords);
+						//originalPiece = selector.selectedPiece;
+						if (selectedUnit.numMoves > 0 && mergeUnit.numMoves > 0) {
+
+							PromptUser ();
+						} else {
+							uiController.SetBasicInfoText ("Both units don't have enough moves to merge!", "Sorry!");
+							uiController.ShowHUD (uiController.BasicInfoPopup);
+						}
+					}
+				}
+				for (int i = 0; i < board.battleSquareCoords.Count; i++) {
+					int[] intArray = board.battleSquareCoords [i];
+					//soomething is going wrong with the slector piece at this coord; it basically isn't destroying and then places itself back after a battle. This presu
+					if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
+						RUnit defender = game.squareDictionary [stringCoords].unitOccupyingSquare;
+						RUnit attacker = selectedUnit;
+						bool attackerWin = game.DoBattle (attacker, defender);
+				
+						if (attackerWin) {
+							uiController.SetBasicInfoText ("You won! Congratulations!", "Okay");
+							uiController.ShowHUD (uiController.BasicInfoPopup);
+							DestroyUnitByUnitDictionary (defender);
+							board.MovePiece (selectedGameObject, intCoords);
+							//selector.PlacePiece ();
+							//DestroyUnitByUnitDictionary (attacker);
+
+							//board.Place (attacker);
+							SyncSceneUnitToDictionaryUnit (attacker, selectedGameObject);
+
+						} else {
+							uiController.SetBasicInfoText ("Oh no, you lost", "Dammit");
+							uiController.ShowHUD (uiController.BasicInfoPopup);
+							DestroyUnitByUnitDictionary (attacker);
+							SyncSceneUnitToDictionaryUnit (defender, FindUnitByUnitDictionary (defender));
+						}
+						board.ClearAllSelectorSquares ();
+						Debug.Log ("done battle"); 
+
+						unitSelected = false;
+						selectedUnit = null;
+						game.CheckForGameOver ();
+					}
+				}
+				// a piece is currently selected
 
 	
 
 			}
-
+		}
 		
 		}
 
@@ -306,6 +310,25 @@ public class RGameController : NetworkBehaviour {
 		unitInSceneRUnit.strength = squareDictionaryRUnit.strength;
 		unitInSceneRUnit.unitType = squareDictionaryRUnit.unitType;
 
+	}
+
+	public void EndGame(Mark winner){
+		string winnerString = "";
+		string descriptionText;
+
+		if (winner == Mark.CON) {
+			winnerString = "Confederates ";
+		} else if (winner == Mark.USA) {
+			winnerString = "United States ";
+		} 
+
+		descriptionText = winnerString + "won the game. Play Again?";
+		if (winner == Mark.None) {
+			descriptionText = "Stalemate! You both lost. Play Again?";
+		}
+
+		uiController.SetBasicInfoText (descriptionText, "Yes");
+	
 	}
 
 

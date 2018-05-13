@@ -24,6 +24,7 @@ namespace RLookout{
 		//messages?
 		public const string DidBeginGameNotification = "Game.DidBeginGameNotification";
 		public const string DidChangeTurnNotification = "Game.DidChangeTurnNotification";
+		public const string DidEndGameNotification = "Game.DidEndGameNotification";
 		//public const string BeginGameSetup = "Game.BeginGameSetup";
 
 		//Actions
@@ -40,7 +41,7 @@ namespace RLookout{
 
 	
 
-		string[] wins = new string[] {
+		private string[] wins = new string[] {
 			"0,4", "4,0"
 		};
 
@@ -50,25 +51,49 @@ namespace RLookout{
 			Debug.Log ("ChangeTurn called by " + control);
 			control = (control == Mark.CON) ? Mark.USA : Mark.CON;
 
-			//trigger event usually
 			EventManager.TriggerEvent(DidChangeTurnNotification);
 		}
 
 
-		void CheckForGameOver(){
-			if (CheckForWin ()){
+		public void CheckForGameOver(){
+			if (CheckForWin ()) {
 				Debug.Log ("Check for win is true");
+
+				EventManager.TriggerEvent (DidEndGameNotification, control);
 				control = Mark.None;
-			// Trigger Event	EventManager.TriggerEvent (DidEndGameNotification);					}
+			} else {
+				Debug.Log ("check for win is false");
 			}
+
+			if (CheckForStaleMate()) {
+				Debug.Log ("Stalemate is true!");
+				control = Mark.None;
+				EventManager.TriggerEvent (DidEndGameNotification, control);
+			}
+			
 		}
 			
 		bool CheckForWin(){
+			foreach (string win in wins) {
+				if (squareDictionary [win].unitOccupyingSquare.unitType != UnitType.Fortress && squareDictionary[win].unitOccupyingSquare.allegiance == control) {
+					return true;
+				}
+			}
 			return false;
 		}
 
-		bool CheckForSTaleMate(){
-			return false;	
+		bool CheckForStaleMate(){
+			foreach (KeyValuePair<string, Square> keyValue in squareDictionary) {
+				string key = keyValue.Key;
+				Square value = keyValue.Value;
+				if (value.squareOccupied) {
+					if (value.unitOccupyingSquare.unitType == UnitType.Army || value.unitOccupyingSquare.unitType == UnitType.Spy) {
+						return false;
+					}
+				}
+
+			}
+			return true;
 		}
 
 		public void ResetGame(){
