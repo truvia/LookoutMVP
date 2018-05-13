@@ -9,46 +9,78 @@ public class RUnit : MonoBehaviour {
 	public int strength;
 	public Mark allegiance;
 	public string coords;
-	bool startMoving = false;
 	public int numMoves = 0;
+	private RGameController gameController;
+	private RSelector selector;
+	private UIController uiController;
+	private RBoard board;
+	public GameObject unitMount;
 
-	private float moveTowardsX;
-	private float moveTowardsz;
-
-	// Use this for initialization
-
-
+	
 	void Start () {
-		
-
+		gameController = FindObjectOfType<RGameController> ();
+		selector = FindObjectOfType<RSelector> ();
+		uiController = FindObjectOfType<UIController> ();
+		board = FindObjectOfType<RBoard> ();
 	}
 	
-	// Update is called once per frame
-	void Update () {
-//		if (startMoving) {
-//			Vector3 newVector3 = new Vector3 (moveTowardsX, 0f, moveTowardsz);
-//			transform.Translate (newVector3 * Time.deltaTime);
-//
-//			if(transform.position
-//		}
 
-		//input.getMOuseDown? rather than selector? 
 
-//		if(Input.GetMouseButtonDown(0)){
-//			RaycastHit hitInfo = new RaycastHit();
-//
-//			if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hitInfo)){
-//					Debug.Log("clicked on " + this.coords);
-//			}
-//		}
+	void OnMouseDown(){
+		if (allegiance == gameController.localPlayerController.myAllegiance) {
+			SelectThisUnit ();
+		}
+	}
+	void SelectThisUnit(){
+		RUnit squareDictionaryRunit = gameController.game.squareDictionary [coords].unitOccupyingSquare;
+		board.ClearAllSelectorSquares ();
+		InstantiateUnitMount ();
+		gameController.selectedUnit = squareDictionaryRunit;
+		gameController.unitSelected = true;
+		gameController.selectedGameObject = this.gameObject;
+		uiController.SetUnitHUDValues(squareDictionaryRunit);
+		uiController.ShowHUD (uiController.UnitHUD);
+
+		if (numMoves > 0) {
+			int[] intCoords =	gameController.ConvertStringToArray (squareDictionaryRunit.coords, 2);
+			board.ShowPossibleSquares (intCoords, squareDictionaryRunit);
+
+		} else {
+			StartCoroutine (uiController.MakeTextFlashRed (uiController.unitHUDMoves));
+			Debug.Log ("You don't have enough moves left for this piece");
+		}
 
 	}
 
-	public void MovePiece(int[] intCoordsToMoveTo){
+	void InstantiateUnitMount(){
+		unitMount = GameObject.FindGameObjectWithTag ("unitMount");
+		if (unitMount != null) {
+			Destroy (unitMount);
 
-		moveTowardsX = (intCoordsToMoveTo[0] + 0.5f) - transform.position.x;
-		moveTowardsz = (intCoordsToMoveTo [1] + 0.5f) - transform.position.z;
-		transform.Translate (moveTowardsX, 0f, moveTowardsz);
-		Debug.Log (moveTowardsX + " move " + moveTowardsz);
+		}
+
+			GameObject newMount = Instantiate (board.unitMount, this.transform.position, Quaternion.identity, this.transform);
+			newMount.tag = "unitMount";
+
 	}
+
+//	void RequestMergePiece(){
+//		if (numMoves > 0) {
+//			
+//		} else {
+//			StartCoroutine (uiController.MakeTextFlashRed (uiController.unitHUDMoves));
+//			Debug.Log ("You don't have enough moves left for this piece");
+//		}
+//	}
+//
+//	void DoBattle(){
+//		if (numMoves > 0) {
+//		
+//		
+//		} else{
+//		StartCoroutine (uiController.MakeTextFlashRed (uiController.unitHUDMoves));
+//		Debug.Log ("You don't have enough moves left for this piece");
+//		}
+//	}
+
 }

@@ -5,6 +5,13 @@ TagManager:
   serializedVersion: 2
   tags:
   - selectorSquare
+  - unitMount
+  - Pawn
+  - Queen
+  - King
+  - Rook
+  - Knight
+  - Bishop
   layers:
   - Default
   - TransparentFX

@@ -11,6 +11,7 @@ public class UIController : MonoBehaviour {
 	public GameObject GameplayHUD;
 	public GameObject MergeUnitHUD;
 	public GameObject UnitHUD;
+	public GameObject BasicInfoPopup;
 	public Button EndTurnButton;
 	public Text controlText;
 	public Text strengthText;
@@ -146,7 +147,29 @@ public class UIController : MonoBehaviour {
 		text.color = Color.black;
 	}
 
+	public void DestroyPiece(){
+		string coords = "0 , 4";
+		RUnit squareUnit = gameController.game.squareDictionary [coords].unitOccupyingSquare;
+		RUnit[] allunits = FindObjectsOfType<RUnit> ();
+		GameObject theUnit = null;
 
+		foreach (RUnit unit in allunits) { 
+			if (unit.coords == squareUnit.coords) {
+				theUnit = unit.gameObject;
+			}
+	
+		}
 
+		Destroy (theUnit);
+
+	}
+
+	public void SetBasicInfoText(string descritionToChange, string buttonTextToChange){
+		Text description = BasicInfoPopup.GetComponentInChildren<Text> ();
+		Text buttonText = BasicInfoPopup.GetComponentInChildren<Button> ().GetComponentInChildren<Text> ();
+
+		description.text = descritionToChange;
+		buttonText.text = buttonTextToChange;
+	}
 }
 

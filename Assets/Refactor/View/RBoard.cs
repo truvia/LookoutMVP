@@ -21,6 +21,7 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 	public GameObject redSelectionSquarePrefab;
 	public GameObject greenSelectionSquarePrefab;
 	public GameObject blueSelectionSquarePrefab;
+	public GameObject unitMount;
 
 	void Start(){
 		gameController = FindObjectOfType<RGameController> ();
@@ -34,22 +35,23 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 	}
 
 	void IPointerClickHandler.OnPointerClick(PointerEventData eventData){
+		if (eventData.button == PointerEventData.InputButton.Right) {
+			//Debug.Log ("clicked");
+			Vector3 pos = eventData.pointerCurrentRaycast.worldPosition;
+			int x = Mathf.FloorToInt (pos.x);
+			int z = Mathf.FloorToInt (pos.z);
 
-		//Debug.Log ("clicked");
-		Vector3 pos = eventData.pointerCurrentRaycast.worldPosition;
-		int x = Mathf.FloorToInt (pos.x);
-		int z = Mathf.FloorToInt (pos.z);
+			if (x < 0 || z < 0 || x > gameController.game.boardWidth || z > gameController.game.boardHeight) {
+				return;
+			}
 
-		if (x < 0 || z < 0 || x > gameController.game.boardWidth|| z > gameController.game.boardHeight) {
-			return;
+			int[] coords = new int[] {
+				x,
+				z
+			};
+
+			EventManager.TriggerEvent (SquareClickedNotification, coords);
 		}
-
-		int[] coords = new int[] {
-			x,
-			z
-		};
-
-		EventManager.TriggerEvent (SquareClickedNotification, coords);
 	}
 
 
@@ -146,6 +148,9 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 		}
 	}
 
+	public void MovePiece(GameObject pieceToMove, int[] intCoordsToMoveTo){
+		pieceToMove.transform.position = new Vector3 (intCoordsToMoveTo [0] + 0.5f, 0.05f, intCoordsToMoveTo [1] + 0.5f);
+	}
 
 
 }

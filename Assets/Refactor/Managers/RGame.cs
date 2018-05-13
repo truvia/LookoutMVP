@@ -139,8 +139,8 @@ namespace RLookout{
 			string USFortress = "4 , 0"; 
 			string CONFortress = "0 , 4";
 
-			ConstructNewUnit (USFortress, Mark.USA, UnitType.Fortress, 5000);
-			ConstructNewUnit (CONFortress, Mark.CON, UnitType.Fortress, 5000);
+			ConstructNewUnit (USFortress, Mark.USA, UnitType.Fortress, 2000);
+			ConstructNewUnit (CONFortress, Mark.CON, UnitType.Fortress, 2000);
 
 
 		}
@@ -189,7 +189,7 @@ namespace RLookout{
 				string key = keyValue.Key;
 				Square value = keyValue.Value;
 				if (value.squareOccupied) {
-					Debug.Log ("Game.LoopThroughUnitDictionary: coords are " + key + " and unit occupying square is " + value.squareOccupied + " and nummves is " + value.unitOccupyingSquare.numMoves);
+					Debug.Log ("Game.LoopThroughUnitDictionary: coords are " + key + " and unit occupying square is " + value.squareOccupied + " and nummves is " + value.unitOccupyingSquare.numMoves + "Unit occupying square is " + value.unitOccupyingSquare + " and allegiance is " + value.unitOccupyingSquare.allegiance);
 				}
 			} 
 		}
@@ -212,7 +212,14 @@ namespace RLookout{
 		}
 
 		public void MergePiece(string coordsOfOriginalPiece, string coordsOfPieceToMergeWith){
-			squareDictionary [coordsOfPieceToMergeWith].unitOccupyingSquare.strength += squareDictionary [coordsOfOriginalPiece].unitOccupyingSquare.strength;
+			RUnit mergePiece = squareDictionary [coordsOfPieceToMergeWith].unitOccupyingSquare;
+			RUnit originalPiece = squareDictionary [coordsOfOriginalPiece].unitOccupyingSquare;
+		
+			if (mergePiece.numMoves > 0 && originalPiece.numMoves > 0) {
+				mergePiece.strength += originalPiece.strength;
+				mergePiece.numMoves -= 1;
+			}
+		
 			DestroyPiece (coordsOfOriginalPiece);
 		}
 

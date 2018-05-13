@@ -7,12 +7,12 @@ public class RSelector : MonoBehaviour {
 
 
 	public GameObject selectedPiece;
-	public GameObject pieceAtThisCoord;
+	//public GameObject pieceAtThisCoord;
 	//public bool anObjectSelected = false;
 	private RGameController gameController;
 	public GameObject originalParent;
 	public Vector3 originalPosition;
-	//private Board board;
+	public GameObject unitMount;
 
 	void Start(){
 		gameController = FindObjectOfType<RGameController> ();
@@ -29,50 +29,52 @@ public class RSelector : MonoBehaviour {
 	}
 
 
-	private void DeselectPiece(){
+	void DeselectPiece(){
+		unitMount.SetActive (false);
 		selectedPiece = null;
 		originalPosition = transform.position;
 		originalParent = null;
+
 	
 	}
 
-	void OnTriggerEnter(Collider collider){
-		//Debug.Log ("collider is " + collider);
-
-		if (collider.GetComponent<RUnit>() && collider.GetComponent<RUnit>().allegiance == gameController.game.control) {
-
-			pieceAtThisCoord = collider.gameObject;
-		}
-	}
-
-	void OnTriggerExit(Collider collider){
-		//Debug.Log ("Have exited " + collider);
-		if (collider.GetComponent<RUnit> ()) {
-			
-			pieceAtThisCoord = null;
-		}
-
-
-	}
+//	void OnTriggerEnter(Collider collider){
+//		//Debug.Log ("collider is " + collider);
+//
+//		if (collider.GetComponent<RUnit>() && collider.GetComponent<RUnit>().allegiance == gameController.game.control) {
+//
+//			pieceAtThisCoord = collider.gameObject;
+//		}
+//	}
+//
+//	void OnTriggerExit(Collider collider){
+//		//Debug.Log ("Have exited " + collider);
+//		if (collider.GetComponent<RUnit> ()) {
+//			
+//			pieceAtThisCoord = null;
+//		}
+//
+//
+//	}
 
 	public void SelectPiece(GameObject pieceToSelect){
 		originalParent = pieceToSelect.transform.parent.gameObject;
 		originalPosition = pieceToSelect.transform.position;
-
 		selectedPiece = pieceToSelect;
 		selectedPiece.transform.parent = this.transform;
+		unitMount.SetActive (true);
+		unitMount.transform.position = pieceToSelect.transform.position;
+
+		unitMount.transform.SetParent(selectedPiece.transform);
 	}
 
-	public void PlacePiece(string newStringCoords){
+	public void PlacePiece(){
 		if (selectedPiece) {
 			selectedPiece.transform.SetParent (originalParent.transform);
-			selectedPiece.GetComponent<RUnit> ().coords = newStringCoords;
 			DeselectPiece ();
 		}
 	}
-
-
-
+		
 
 	public void KillSelectedPiece(){
 		Destroy (selectedPiece);

@@ -14,12 +14,14 @@ public class RGameController : NetworkBehaviour {
 	private UnityAction<System.Object> didStartLocalPlayerNotificationAction;
 
 	private RBoard board;
-	private RSelector selector;
+	//private RSelector selector;
 	private UIController uiController;
 
-
+	public RUnit selectedUnit;
+	public GameObject selectedGameObject;
+	public bool unitSelected = false;
 	private RUnit mergeUnit;
-	private GameObject originalPiece;
+	//private GameObject originalPiece;
 	// Use this for initialization
 
 	public RGame game = new RGame();
@@ -31,7 +33,7 @@ public class RGameController : NetworkBehaviour {
 		onBoardSquareClickedNotificationAction = new UnityAction<System.Object>(OnBoardSquareClicked);
 		didStartLocalPlayerNotificationAction = new UnityAction<System.Object> (IdentifyLocalPlayer);
 		board = FindObjectOfType<RBoard> ();
-		selector = FindObjectOfType<RSelector> ();
+		//selector = FindObjectOfType<RSelector> ();
 		uiController = FindObjectOfType<UIController> ();
 
 	}
@@ -90,46 +92,52 @@ public class RGameController : NetworkBehaviour {
 		int[] intCoords = (int[]) args; 
 		string stringCoords = ConvertArrayToString (intCoords);
 
-		if (selector.selectedPiece == null) {
+		if (unitSelected ==  false) {
 			//if no piece is currently selected
-
-			if (game.squareDictionary [stringCoords].squareOccupied) {
-				RUnit unit = game.squareDictionary[stringCoords].unitOccupyingSquare;
-				if (unit.allegiance == localPlayerController.myAllegiance) {
-					//there is a piece at this location in the square dictionary and it is my allegiance;
-					if (selector.pieceAtThisCoord) {
-						//to prevent a bounceback if there is no piece at this coord
-
-						uiController.SetUnitHUDValues(unit);
-						uiController.ShowHUD(uiController.UnitHUD);
-
-
-						if (unit.numMoves > 0) {
-							selector.SelectPiece (selector.pieceAtThisCoord);												
-							board.ShowPossibleSquares (intCoords, unit);
-
-						} else {
-							StartCoroutine (uiController.MakeTextFlashRed (uiController.unitHUDMoves));
-							Debug.Log ("You don't have enough moves left for this piece");
-						}
-					} else {
-						Debug.Log (this + " says that there is no selector.pieceAtThiscoord");	
-					
-					}
-				} 
-			}
+//
+//			if (game.squareDictionary [stringCoords].squareOccupied) {
+//				Debug.Log (game.squareDictionary [stringCoords].squareOccupied + " this is what it says and square is " + game.squareDictionary[stringCoords].unitOccupyingSquare);
+//				if (game.squareDictionary[stringCoords].unitOccupyingSquare.allegiance == localPlayerController.myAllegiance) {
+//					selectedUnit = game.squareDictionary[stringCoords].unitOccupyingSquare;
+//					unitSelected = true;
+//					Debug.Log ("selected unit is selected this is " + selectedUnit);
+//					//there is a piece at this location in the square dictionary and it is my allegiance;
+//					selector.SelectPiece(FindUnitByUnitDictionary(selectedUnit));
+//					uiController.SetUnitHUDValues(selectedUnit);
+//					uiController.ShowHUD(uiController.UnitHUD);
+//
+//
+//					if (selectedUnit.numMoves > 0) {										
+//						board.ShowPossibleSquares (intCoords, selectedUnit);
+//
+//						} else {
+//							StartCoroutine (uiController.MakeTextFlashRed (uiController.unitHUDMoves));
+//							Debug.Log ("You don't have enough moves left for this piece");
+//						}
+//				
+//				} 
+//			}
 
 		} else {
 			// A piece is currently selected
-			RUnit squareDictionarySelectedPiece = game.squareDictionary[selector.selectedPiece.GetComponent<RUnit>().coords].unitOccupyingSquare;
-
+		//	RUnit squareDictionarySelectedPiece = game.squareDictionary[selectedUnit.GetComponent<RUnit>().coords].unitOccupyingSquare;
+			Debug.Log(" a piece is selected");
 			for (int i =0; i<board.possibleMovementCoords.Count; i++){
 				int[] intArray = board.possibleMovementCoords [i];
 				if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
 					//Move piece to location
-					Debug.Log("Move piece requested");
-					game.MovePiece (squareDictionarySelectedPiece, stringCoords);
-					selector.PlacePiece (stringCoords);
+					Debug.Log("Move piece requested" + selectedUnit + " blah " + " " + selectedUnit.allegiance);
+
+
+					GameObject gameObjectRunitOfSelectedPiece = FindUnitByUnitDictionary (selectedUnit);
+					board.MovePiece (selectedGameObject, intCoords);
+					game.MovePiece (selectedUnit, stringCoords);
+					SyncSceneUnitToDictionaryUnit (selectedUnit, selectedGameObject);
+					unitSelected = false;
+					selectedUnit = null;
+					selectedGameObject = null;
+					//selector.PlacePiece ();
+				
 					uiController.HideHUD (uiController.UnitHUD);
 					board.ClearAllSelectorSquares ();
 
@@ -144,34 +152,45 @@ public class RGameController : NetworkBehaviour {
 
 					mergeUnit = game.squareDictionary [stringCoords].unitOccupyingSquare;
 					//Debug.Log (mergeUnit.coords + " merge unit coords are this and is there a unit occupying square? " + game.squareDictionary[stringCoords].squareOccupied + " and stringcoords are " + stringCoords);
-					originalPiece = selector.selectedPiece;
+					//originalPiece = selector.selectedPiece;
+					if (selectedUnit.numMoves > 0 && mergeUnit.numMoves > 0) {
 
-					PromptUser ();
-
+						PromptUser ();
+					} else {
+						uiController.SetBasicInfoText ("Both units don't have enough moves to merge!", "Sorry!");
+						uiController.ShowHUD (uiController.BasicInfoPopup);
+					}
 				}
 			}
 			for(int i = 0; i <board.battleSquareCoords.Count; i++){
 				int[] intArray = board.battleSquareCoords [i];
-
+				//soomething is going wrong with the slector piece at this coord; it basically isn't destroying and then places itself back after a battle. This presu
 				if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
 					RUnit defender = game.squareDictionary [stringCoords].unitOccupyingSquare;
-					RUnit attacker = squareDictionarySelectedPiece;
+					RUnit attacker = selectedUnit;
 					bool attackerWin = game.DoBattle (attacker, defender);
 				
 					if (attackerWin) {
+						uiController.SetBasicInfoText ("You won! Congratulations!", "Okay");
+						uiController.ShowHUD (uiController.BasicInfoPopup);
 						DestroyUnitByUnitDictionary (defender);
-						DestroyUnitByUnitDictionary (attacker);
+						board.MovePiece (selectedGameObject, intCoords);
+						//selector.PlacePiece ();
+						//DestroyUnitByUnitDictionary (attacker);
 
-						board.Place (attacker);
-						SyncSceneUnitToDictionaryUnit (attacker, FindUnitByUnitDictionary(attacker));
+						//board.Place (attacker);
+						SyncSceneUnitToDictionaryUnit (attacker, selectedGameObject);
 
 					} else {
+						uiController.SetBasicInfoText ("Oh no, you lost", "Dammit");
+						uiController.ShowHUD (uiController.BasicInfoPopup);
 						DestroyUnitByUnitDictionary (attacker);
 						SyncSceneUnitToDictionaryUnit (defender, FindUnitByUnitDictionary(defender));
 					}
-					
+					board.ClearAllSelectorSquares ();
 					Debug.Log ("done battle"); 
-
+					unitSelected = false;
+					selectedUnit = null;
 				}
 			}
 			// a piece is currently selected
@@ -244,15 +263,17 @@ public class RGameController : NetworkBehaviour {
 		RUnit[] allUnits = FindObjectsOfType<RUnit> ();
 		foreach (RUnit thisUnit in allUnits) {
 			if (thisUnit.coords == unitToFind.coords) {
+				Debug.Log ("successfully found gameobject");
 				return thisUnit.gameObject;
 
 			}
 		}
+		Debug.Log ("did not find a gameobject of the coords " + unitToFind.coords);
 		return null;
 	}
 
 	public void PromptUser(){
-		uiController.WaitForUser("Do you want to merge units of strength " + originalPiece.GetComponent<RUnit>().strength + " and  new unit " + mergeUnit.strength + "?", new UnityAction ( () => {
+		uiController.WaitForUser("Do you want to merge units of strength " + selectedUnit.strength + " and  new unit " + mergeUnit.strength + "?", new UnityAction ( () => {
 			uiController.MergeUnits();
 		}), new UnityAction( () => {
 			uiController.CancelInput();
@@ -260,27 +281,25 @@ public class RGameController : NetworkBehaviour {
 	}
 
 	public void MergeUnits(){
-		//Something is wrong with the mergeunit as the coords are the original position not the updated position;
 		//Debug.Log("game controller says merge units at " + originalPiece.GetComponent<RUnit>().coords + " , and the mergebble piece at " + mergeUnit.coords);	
+
 		GameObject gameObjectOfMergeUnit = FindUnitByUnitDictionary (mergeUnit);
-		gameObjectOfMergeUnit.GetComponent<RUnit> ().strength += originalPiece.GetComponent<RUnit> ().strength;
-		game.MergePiece (originalPiece.GetComponent<RUnit> ().coords, mergeUnit.coords);
 
+		game.MergePiece (selectedUnit.coords, mergeUnit.coords);
+		SyncSceneUnitToDictionaryUnit (mergeUnit, gameObjectOfMergeUnit);
+		if (selectedGameObject.GetComponent<RUnit>().unitMount != null) {
+			selectedGameObject.GetComponent<RUnit>().unitMount.transform.SetParent (this.transform);
+			selectedGameObject.GetComponent<RUnit> ().unitMount.transform.position = new Vector3 (-50, 0f, -50);
+		}
+		Destroy (selectedGameObject);
 		uiController.HideHUD (uiController.UnitHUD);
-		selector.KillSelectedPiece ();
 		board.ClearAllSelectorSquares ();
-		//Merge Units
-
-		GameObject gameObject = new GameObject ();
-
 	
 	}
 
 
 	public void SyncSceneUnitToDictionaryUnit(RUnit squareDictionaryRUnit, GameObject unitInScene){
 		RUnit unitInSceneRUnit = unitInScene.GetComponent<RUnit> ();
-
-
 		unitInSceneRUnit.allegiance = squareDictionaryRUnit.allegiance;
 		unitInSceneRUnit.coords = squareDictionaryRUnit.coords;
 		unitInSceneRUnit.numMoves = squareDictionaryRUnit.numMoves;
