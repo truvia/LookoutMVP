@@ -56,12 +56,14 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 
 
 	public void ShowPossibleSquares(int[] intCoords, RUnit unit){
+		//After clicking on one of your units, show the squares that you can move to, take and merge with.
 		//Debug.Log ("Show Possible Squares called");
-		ClearAllSelectorSquares ();
+
+		ClearAllSelectorSquares (); // if any are already instantiated for any reason, clear this and the lists that contain the movement squares etc.
 		GameObject selectionSquare;
 
 
-		if (unit.unitType == UnitType.Army) {
+		if (unit.unitType == UnitType.Army) { 
 
 			for(int x = -1; x <= 1; x++)	{
 				for (int z = -1; z <= 1; z++) {
@@ -152,5 +154,18 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 		pieceToMove.transform.position = new Vector3 (intCoordsToMoveTo [0] + 0.5f, 0.05f, intCoordsToMoveTo [1] + 0.5f);
 	}
 
+	public void DeselectPiece(){
+		UIController uiController = FindObjectOfType<UIController> ();
+		uiController.HideHUD (uiController.UnitHUD); //hide Unit info popup;
+
+		//Formally deselect object in GameController
+		gameController.selectedUnit = null;
+		gameController.selectedGameObject = null;
+		gameController.unitSelected = false;
+
+		//Get rid of the red, blue and green squares that show when you click on a unit, and clear the Lists that sit behind that.
+		ClearAllSelectorSquares ();
+
+	}
 
 }

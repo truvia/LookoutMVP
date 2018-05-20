@@ -19,17 +19,5 @@ public class Square : MonoBehaviour {
 
 	public bool squareOccupied = false;
 
-//	public Mark allegiance;
-//	public UnitType unit_type;
-//	public int strength = 5000;
-//
-//
-//	public class Fortress:Unit{
-//		int strength = 5000;
-//	}
-//
-//	public class Spy:Unit{
-//		int strength = 5000;
-//
-//	}
+
 }

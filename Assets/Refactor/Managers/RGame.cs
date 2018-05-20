@@ -42,7 +42,7 @@ namespace RLookout{
 	
 
 		private string[] wins = new string[] {
-			"0,4", "4,0"
+			"0 , 4", "4 , 0"
 		};
 
 
@@ -74,9 +74,12 @@ namespace RLookout{
 		}
 			
 		bool CheckForWin(){
-			foreach (string win in wins) {
-				if (squareDictionary [win].unitOccupyingSquare.unitType != UnitType.Fortress && squareDictionary[win].unitOccupyingSquare.allegiance == control) {
-					return true;
+			for(int i = 0; i < wins.Length; i++) {
+				Square square = squareDictionary [wins[i]];
+				if (square.squareOccupied) {
+					if (square.unitOccupyingSquare.unitType != UnitType.Fortress && square.unitOccupyingSquare.allegiance == control) {
+						return true;
+					}
 				}
 			}
 			return false;
@@ -214,7 +217,7 @@ namespace RLookout{
 				string key = keyValue.Key;
 				Square value = keyValue.Value;
 				if (value.squareOccupied) {
-					Debug.Log ("Game.LoopThroughUnitDictionary: coords are " + key + " and unit occupying square is " + value.squareOccupied + " and nummves is " + value.unitOccupyingSquare.numMoves + "Unit occupying square is " + value.unitOccupyingSquare + " and allegiance is " + value.unitOccupyingSquare.allegiance);
+					Debug.Log ("Game.LoopThroughUnitDictionary: coords are:" + key + "; allegiance is " + value.unitOccupyingSquare.allegiance + "; strength is: " + value.unitOccupyingSquare.strength + "; and unit occupying square is " + value.squareOccupied + "; and nummoves is: " + value.unitOccupyingSquare.numMoves + "; and Unit occupying square is " + value.unitOccupyingSquare + ";");
 				}
 			} 
 		}
@@ -261,8 +264,8 @@ namespace RLookout{
 
 			if (actOfGodRandomizer != 1) {
 
-				float attackAdvantageMultiplier = 1;
-				float defenceAdvantageMultiplier = 4 / 3;
+				float attackAdvantageMultiplier = 1f;
+				float defenceAdvantageMultiplier = 4f / 3f;
 				float attackerStrength = attacker.strength;
 				float defenderStrength = defender.strength;
 
@@ -293,7 +296,7 @@ namespace RLookout{
 
 					defender.strength = newStrength;
 
-					DestroyPiece (attacker.coords);
+					DestroyPiece (attackerCoords);
 					Debug.Log("defender strength is now " + defender.strength + " but the square dictionary strength is now" + squareDictionary[defender.coords].unitOccupyingSquare.strength);
 					AttackerWin = false;
 				}

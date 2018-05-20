@@ -16,12 +16,14 @@ public class RPlayerController : NetworkBehaviour {
 	private RGameController gameController;
 	private UnityAction<System.Object> endTurnRequestNotification;
 	private UnityAction<System.Object> didEndGameNotificationAction;
+	private EnqueueSystem enqueueSystem;
 
 	//Developer Only Listeners
 	private UnityAction<System.Object> didRequestResetGameNotificationAction;
 
 	void Start(){
 		gameController = FindObjectOfType<RGameController> ();
+		enqueueSystem = FindObjectOfType<EnqueueSystem> ();
 	}
 
 	void Awake(){
@@ -54,12 +56,10 @@ public class RPlayerController : NetworkBehaviour {
 
 		//When the client joins reset the game. May want to amend this at a future date.
 
-
-		//Display
 		if (isServer) {
 			myAllegiance = Mark.CON; //The Host is always Confederate
 		} else if (!isServer) {
-			myAllegiance = Mark.USA; //The cleint is always US
+			myAllegiance = Mark.USA; //The client is always US
 			CmdDefineStartPositions();
 		}
 
@@ -68,10 +68,22 @@ public class RPlayerController : NetworkBehaviour {
 
 	void ChangeTurn(object obj){
 
-		if (isLocalPlayer && gameController.game.control == myAllegiance) {
+		if (isLocalPlayer && gameController.game.control == myAllegiance) { //only runs from whoever has control
 		
+
+
+			//sends the movements made by this player to the other player's machine
+			foreach (KeyValuePair<string, int[]> keyValue in enqueueSystem.enquedPieceMovement) {
+				string originalPieceCoords = keyValue.Key;
+				int[] MoveToCoords = keyValue.Value;
+				CmdBroadcastEnqueuedMovements (originalPieceCoords, MoveToCoords);
+				Debug.Log ("sending across original coords: " + originalPieceCoords + " and moveTo coords " + MoveToCoords [0] + " , " + MoveToCoords [1]);
+			}
+			enqueueSystem.enquedPieceMovement.Clear (); //empty the list of movements made by the player who just pushed end turn's on that machine (should this go in gameController?);
+
 			CmdChangeTurn ();
 
+			//send across the squareDictionary, which has details of what squares have what pieces in the game, to the next player
 			foreach (KeyValuePair<string, Square> keyValue in gameController.game.squareDictionary) {
 				string key = keyValue.Key;
 				Square value = keyValue.Value;
@@ -104,10 +116,9 @@ public class RPlayerController : NetworkBehaviour {
 					numMoves = 0;
 				}
 
-				CmdBroadcastSquareDictionary (key, squareOccupied, allegiance, coords, strength, unitType, numMoves);
+			CmdBroadcastSquareDictionary (key, squareOccupied, allegiance, coords, strength, unitType, numMoves);
 				//Debug.Log ("Game.LoopThroughUnitDictionary: coords are " + key + " and unit occupying square is " + value.squareOccupied);
 			} 
-			//CmdBroadcastSquareDictionary (gameController.game.squareDictionary);
 		}
 	}
 
@@ -167,7 +178,7 @@ public class RPlayerController : NetworkBehaviour {
 		}
 			
 
-		gameController.RefreshBoard (null);
+		//gameController.RefreshBoard (null);
 	}
 
 	[Command]
@@ -215,6 +226,17 @@ public class RPlayerController : NetworkBehaviour {
 		gameController.game.DefineStartPositions(CONArmiesStrength, USArmiesStrength);
 		gameController.game.ResetGame ();
 	}
+
+	[Command]
+	void CmdBroadcastEnqueuedMovements(string originalPiece, int[] coordsToMoveTo){
+		RpcBroadcastEnqueuedMovements(originalPiece, coordsToMoveTo);
+	}
+
+	[ClientRpc]
+	void RpcBroadcastEnqueuedMovements(string originalPiece, int[] coordsToMoveTo){
+		gameController.AddEnqueuedItem (originalPiece, coordsToMoveTo);
+	}
+
 
 
 	#region DeveloperDebugOnly

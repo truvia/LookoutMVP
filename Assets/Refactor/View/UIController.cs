@@ -12,6 +12,7 @@ public class UIController : MonoBehaviour {
 	public GameObject MergeUnitHUD;
 	public GameObject UnitHUD;
 	public GameObject BasicInfoPopup;
+	public GameObject preventUserInputPanel;
 	public Button EndTurnButton;
 	public Text controlText;
 	public Text strengthText;
@@ -67,6 +68,9 @@ public class UIController : MonoBehaviour {
 	}
 
 	public void ChangeTurnText(){
+		RBoard board = FindObjectOfType<RBoard> ();
+
+		
 		EventManager.TriggerEvent (DidRequestEndTurn, this.gameObject);
 
 	}
@@ -147,8 +151,8 @@ public class UIController : MonoBehaviour {
 		text.color = Color.black;
 	}
 
-	public void DestroyPiece(){
-		string coords = "0 , 4";
+	public void DestroyPiece(string coords){
+		
 		RUnit squareUnit = gameController.game.squareDictionary [coords].unitOccupyingSquare;
 		RUnit[] allunits = FindObjectsOfType<RUnit> ();
 		GameObject theUnit = null;
@@ -170,6 +174,13 @@ public class UIController : MonoBehaviour {
 
 		description.text = descritionToChange;
 		buttonText.text = buttonTextToChange;
+	}
+
+	public void ToggleShowPreventUserInputPanel(string notificationText){
+		Text panelText = preventUserInputPanel.GetComponentInChildren<Text> ();
+		panelText.text = notificationText;
+		preventUserInputPanel.SetActive(preventUserInputPanel.activeSelf ? false : true);
+
 	}
 }
 

@@ -16,6 +16,7 @@ public class RGameController : NetworkBehaviour {
 	private RBoard board;
 	//private RSelector selector;
 	private UIController uiController;
+	private EnqueueSystem enqueueSystem;
 
 	public RUnit selectedUnit;
 	public GameObject selectedGameObject;
@@ -29,12 +30,13 @@ public class RGameController : NetworkBehaviour {
 
 	void Awake(){
 		didBeginGameNotificationAction = new UnityAction<System.Object> (RefreshBoard); //defines what action that this object should take when the event is triggered
-		didChangeTurnNotificationAction = new UnityAction<System.Object>(RefreshBoard);
+		didChangeTurnNotificationAction = new UnityAction<System.Object>(ChangeTurnAction);
 		onBoardSquareClickedNotificationAction = new UnityAction<System.Object>(OnBoardSquareClicked);
 		didStartLocalPlayerNotificationAction = new UnityAction<System.Object> (IdentifyLocalPlayer);
 		board = FindObjectOfType<RBoard> ();
 		//selector = FindObjectOfType<RSelector> ();
 		uiController = FindObjectOfType<UIController> ();
+		enqueueSystem = FindObjectOfType<EnqueueSystem> ();
 
 	}
 
@@ -53,8 +55,9 @@ public class RGameController : NetworkBehaviour {
 	}
 
 	public void RefreshBoard(object obj){
+		//enqueueSystem.CallDequeuePieces ();
 		DestroyAllUnits ();
-		//Debug.Log ("GameController . Refresh Board Called");
+		Debug.Log ("GameController . Refresh Board Called");
 	
 		foreach(KeyValuePair<string, Square> keyValue in game.squareDictionary){
 			string key = keyValue.Key;
@@ -70,6 +73,13 @@ public class RGameController : NetworkBehaviour {
 				board.Place (value.unitOccupyingSquare);
 
 			}
+
+		}
+	}
+
+	public void ChangeTurnAction(object obj){
+		if (localPlayerController.myAllegiance == game.control) {
+			enqueueSystem.CallDequeuePieces ();
 
 		}
 	}
@@ -131,17 +141,14 @@ public class RGameController : NetworkBehaviour {
 
 
 						GameObject gameObjectRunitOfSelectedPiece = FindUnitByUnitDictionary (selectedUnit);
-						board.MovePiece (selectedGameObject, intCoords);
-						game.MovePiece (selectedUnit, stringCoords);
-						SyncSceneUnitToDictionaryUnit (selectedUnit, selectedGameObject);
-						unitSelected = false;
-						selectedUnit = null;
-						selectedGameObject = null;
-						//selector.PlacePiece ();
-				
-						uiController.HideHUD (uiController.UnitHUD);
-						board.ClearAllSelectorSquares ();
-						game.CheckForGameOver ();
+						enqueueSystem.enquedPieceMovement.Add (selectedUnit.coords, intCoords); //enqueues movement for next player so they can see what moves the enemy took;
+						selectedGameObject.GetComponent<RUnit> ().MoveTowardsAPlace (intCoords);
+
+						//board.MovePiece (selectedGameObject, intCoords); //physically move the unit
+						game.MovePiece (selectedUnit, stringCoords); //move the unit in the unitDictionary - may be worth putting this in its own method here.
+						SyncSceneUnitToDictionaryUnit (selectedUnit, selectedGameObject); //syncs the values in the Runit component on the board with the SquareDictionary values in the Game. 
+						board.DeselectPiece (); //hides the unit info HUD, deselects the piece in here and sets the gameController unitSelected values etc to null;
+						game.CheckForGameOver (); 
 
 					}
 				}
@@ -175,8 +182,10 @@ public class RGameController : NetworkBehaviour {
 						if (attackerWin) {
 							uiController.SetBasicInfoText ("You won! Congratulations!", "Okay");
 							uiController.ShowHUD (uiController.BasicInfoPopup);
+							uiController.HideHUD (uiController.UnitHUD);
 							DestroyUnitByUnitDictionary (defender);
-							board.MovePiece (selectedGameObject, intCoords);
+							enqueueSystem.enquedPieceMovement.Add (selectedGameObject.GetComponent<RUnit>().coords, intCoords);
+							selectedGameObject.GetComponent<RUnit> ().MoveTowardsAPlace (intCoords);
 							//selector.PlacePiece ();
 							//DestroyUnitByUnitDictionary (attacker);
 
@@ -189,11 +198,9 @@ public class RGameController : NetworkBehaviour {
 							DestroyUnitByUnitDictionary (attacker);
 							SyncSceneUnitToDictionaryUnit (defender, FindUnitByUnitDictionary (defender));
 						}
-						board.ClearAllSelectorSquares ();
 						Debug.Log ("done battle"); 
 
-						unitSelected = false;
-						selectedUnit = null;
+						board.DeselectPiece ();
 						game.CheckForGameOver ();
 					}
 				}
@@ -288,7 +295,7 @@ public class RGameController : NetworkBehaviour {
 		//Debug.Log("game controller says merge units at " + originalPiece.GetComponent<RUnit>().coords + " , and the mergebble piece at " + mergeUnit.coords);	
 
 		GameObject gameObjectOfMergeUnit = FindUnitByUnitDictionary (mergeUnit);
-
+		enqueueSystem.enquedPieceMovement.Add (selectedUnit.coords, ConvertStringToArray (mergeUnit.coords, 2));
 		game.MergePiece (selectedUnit.coords, mergeUnit.coords);
 		SyncSceneUnitToDictionaryUnit (mergeUnit, gameObjectOfMergeUnit);
 		if (selectedGameObject.GetComponent<RUnit>().unitMount != null) {
@@ -296,8 +303,7 @@ public class RGameController : NetworkBehaviour {
 			selectedGameObject.GetComponent<RUnit> ().unitMount.transform.position = new Vector3 (-50, 0f, -50);
 		}
 		Destroy (selectedGameObject);
-		uiController.HideHUD (uiController.UnitHUD);
-		board.ClearAllSelectorSquares ();
+		board.DeselectPiece ();
 	
 	}
 
@@ -328,10 +334,23 @@ public class RGameController : NetworkBehaviour {
 		}
 
 		uiController.SetBasicInfoText (descriptionText, "Yes");
+
+		uiController.RequestResetGame ();
 	
 	}
 
 
+	public void AddEnqueuedItem(string originalPiece, int[] coordsToMoveTo){
+		if (localPlayerController.myAllegiance != game.control) {
+			if (!enqueueSystem.enquedPieceMovement.ContainsKey(originalPiece)) {
+				Debug.Log ("i am called");
+
+				enqueueSystem.enquedPieceMovement.Add (originalPiece, coordsToMoveTo); //update enqueue system on opposite machine. When game is reset, it will call enqueueSystem.MoveAllPieces
+			} else {
+				Debug.Log ("this is already in existence");
+			}
+		}
+	}
 
 
 }

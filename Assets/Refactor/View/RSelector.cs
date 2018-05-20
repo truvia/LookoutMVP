@@ -7,8 +7,6 @@ public class RSelector : MonoBehaviour {
 
 
 	public GameObject selectedPiece;
-	//public GameObject pieceAtThisCoord;
-	//public bool anObjectSelected = false;
 	private RGameController gameController;
 	public GameObject originalParent;
 	public Vector3 originalPosition;

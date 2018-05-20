@@ -6,14 +6,17 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 0
-    path: Assets/Scenes/TestScene.unity
-    guid: 48196d73b36d9b14ba8dda354f41c95e
+    path: 
+    guid: 00000000000000000000000000000000
   - enabled: 0
-    path: Assets/Scenes/Main.unity
-    guid: d188e4ee0dbc66e41a1f61f7e7264dda
+    path: 
+    guid: 00000000000000000000000000000000
   - enabled: 0
-    path: Assets/Scenes/TestBoard.unity
-    guid: 16dcba4b89b9c604ea0eece1dd9f0563
+    path: 
+    guid: 00000000000000000000000000000000
   - enabled: 1
-    path: Assets/Refactor/RefactorMain.unity
+    path: Assets/Refactor/Scenes/Menu.unity
+    guid: 1d825739c10c0bc44bad853fe380492b
+  - enabled: 1
+    path: Assets/Refactor/Scenes/RefactorMain.unity
     guid: 4c6f4821be16386478b463202e9a7b1c
