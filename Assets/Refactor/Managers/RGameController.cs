@@ -22,6 +22,9 @@ public class RGameController : NetworkBehaviour {
 	public GameObject selectedGameObject;
 	public bool unitSelected = false;
 	private RUnit mergeUnit;
+
+	public int boardwidth; 
+	public int boardheight; 
 	//private GameObject originalPiece;
 	// Use this for initialization
 
@@ -56,6 +59,7 @@ public class RGameController : NetworkBehaviour {
 
 	public void RefreshBoard(object obj){
 		//enqueueSystem.CallDequeuePieces ();
+		board.ClearAllSelectorSquares();	
 		DestroyAllUnits ();
 		Debug.Log ("GameController . Refresh Board Called");
 	
@@ -75,6 +79,8 @@ public class RGameController : NetworkBehaviour {
 			}
 
 		}
+
+		board.RegenerateFogOfWar ();
 	}
 
 	public void ChangeTurnAction(object obj){
@@ -98,46 +104,26 @@ public class RGameController : NetworkBehaviour {
 
 		
 	void OnBoardSquareClicked(object args){
+		Debug.Log ("onboardsquareclicked");
+		if (!enqueueSystem.preventInput) {
+
+
 		//Debug.Log ("RGameController.OnboardSquareClicked");
 		int[] intCoords = (int[]) args; 
 		string stringCoords = ConvertArrayToString (intCoords);
-
-		if (unitSelected == false) {
-			//if no piece is currently selected
-//
-//			if (game.squareDictionary [stringCoords].squareOccupied) {
-//				Debug.Log (game.squareDictionary [stringCoords].squareOccupied + " this is what it says and square is " + game.squareDictionary[stringCoords].unitOccupyingSquare);
-//				if (game.squareDictionary[stringCoords].unitOccupyingSquare.allegiance == localPlayerController.myAllegiance) {
-//					selectedUnit = game.squareDictionary[stringCoords].unitOccupyingSquare;
-//					unitSelected = true;
-//					Debug.Log ("selected unit is selected this is " + selectedUnit);
-//					//there is a piece at this location in the square dictionary and it is my allegiance;
-//					selector.SelectPiece(FindUnitByUnitDictionary(selectedUnit));
-//					uiController.SetUnitHUDValues(selectedUnit);
-//					uiController.ShowHUD(uiController.UnitHUD);
-//
-//
-//					if (selectedUnit.numMoves > 0) {										
-//						board.ShowPossibleSquares (intCoords, selectedUnit);
-//
-//						} else {
-//							StartCoroutine (uiController.MakeTextFlashRed (uiController.unitHUDMoves));
-//							Debug.Log ("You don't have enough moves left for this piece");
-//						}
-//				
-//				} 
-//			}
-
-		} else {
+			//Debug.Log ("boardsquareclicked and enque system hasn't prevented input");
+			if (unitSelected) {
+			//	Debug.Log ("unit selected");
 			// A piece is currently selected
 			//	RUnit squareDictionarySelectedPiece = game.squareDictionary[selectedUnit.GetComponent<RUnit>().coords].unitOccupyingSquare;
 			if (game.control == localPlayerController.myAllegiance) {
-				Debug.Log (" a piece is selected");
+			//	Debug.Log (" a piece is selected");
 				for (int i = 0; i < board.possibleMovementCoords.Count; i++) {
+
 					int[] intArray = board.possibleMovementCoords [i];
 					if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
 						//Move piece to location
-						Debug.Log ("Move piece requested" + selectedUnit + " blah " + " " + selectedUnit.allegiance);
+					//Debug.Log ("Move piece requested" + selectedUnit + " blah " + " " + selectedUnit.allegiance);
 
 
 						GameObject gameObjectRunitOfSelectedPiece = FindUnitByUnitDictionary (selectedUnit);
@@ -173,23 +159,19 @@ public class RGameController : NetworkBehaviour {
 				}
 				for (int i = 0; i < board.battleSquareCoords.Count; i++) {
 					int[] intArray = board.battleSquareCoords [i];
-					//soomething is going wrong with the slector piece at this coord; it basically isn't destroying and then places itself back after a battle. This presu
+
 					if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
+						enqueueSystem.enquedPieceMovement.Add (selectedGameObject.GetComponent<RUnit> ().coords, intCoords);
+						selectedGameObject.GetComponent<RUnit> ().MoveTowardsAPlace (intCoords);
 						RUnit defender = game.squareDictionary [stringCoords].unitOccupyingSquare;
 						RUnit attacker = selectedUnit;
 						bool attackerWin = game.DoBattle (attacker, defender);
-				
+
 						if (attackerWin) {
 							uiController.SetBasicInfoText ("You won! Congratulations!", "Okay");
 							uiController.ShowHUD (uiController.BasicInfoPopup);
 							uiController.HideHUD (uiController.UnitHUD);
 							DestroyUnitByUnitDictionary (defender);
-							enqueueSystem.enquedPieceMovement.Add (selectedGameObject.GetComponent<RUnit>().coords, intCoords);
-							selectedGameObject.GetComponent<RUnit> ().MoveTowardsAPlace (intCoords);
-							//selector.PlacePiece ();
-							//DestroyUnitByUnitDictionary (attacker);
-
-							//board.Place (attacker);
 							SyncSceneUnitToDictionaryUnit (attacker, selectedGameObject);
 
 						} else {
@@ -198,7 +180,7 @@ public class RGameController : NetworkBehaviour {
 							DestroyUnitByUnitDictionary (attacker);
 							SyncSceneUnitToDictionaryUnit (defender, FindUnitByUnitDictionary (defender));
 						}
-						Debug.Log ("done battle"); 
+						//Debug.Log ("done battle"); 
 
 						board.DeselectPiece ();
 						game.CheckForGameOver ();
@@ -212,6 +194,9 @@ public class RGameController : NetworkBehaviour {
 		}
 		
 		}
+
+		board.RegenerateFogOfWar ();
+	}
 
 	    
 	void IdentifyLocalPlayer(object obj){
@@ -274,7 +259,7 @@ public class RGameController : NetworkBehaviour {
 		RUnit[] allUnits = FindObjectsOfType<RUnit> ();
 		foreach (RUnit thisUnit in allUnits) {
 			if (thisUnit.coords == unitToFind.coords) {
-				Debug.Log ("successfully found gameobject");
+				//Debug.Log ("successfully found gameobject");
 				return thisUnit.gameObject;
 
 			}
@@ -290,6 +275,8 @@ public class RGameController : NetworkBehaviour {
 			uiController.CancelInput();
 		}));
 	}
+
+
 
 	public void MergeUnits(){
 		//Debug.Log("game controller says merge units at " + originalPiece.GetComponent<RUnit>().coords + " , and the mergebble piece at " + mergeUnit.coords);	
@@ -341,16 +328,39 @@ public class RGameController : NetworkBehaviour {
 
 
 	public void AddEnqueuedItem(string originalPiece, int[] coordsToMoveTo){
+		//adds move to the enqueue system list (i.e. to show player moves. In future this will be done with UnityActions rather than just wtih ints 
 		if (localPlayerController.myAllegiance != game.control) {
 			if (!enqueueSystem.enquedPieceMovement.ContainsKey(originalPiece)) {
-				Debug.Log ("i am called");
+
 
 				enqueueSystem.enquedPieceMovement.Add (originalPiece, coordsToMoveTo); //update enqueue system on opposite machine. When game is reset, it will call enqueueSystem.MoveAllPieces
 			} else {
-				Debug.Log ("this is already in existence");
+				//Debug.Log ("this is already in existence");
 			}
 		}
 	}
 
+	public int[] DefineStartPositions(){
+		ArrayList starterSquares = new ArrayList ();
+		int[] starterSquaresArray = new int[5];
+		for (int i = 0; i < 5; i++) {
+			int randNum = Mathf.RoundToInt(Random.Range(0f, 7f));
+
+			if(starterSquares.Contains(randNum) || randNum == 4){
+				i--;
+			}else{
+				starterSquares.Add(randNum);
+			}
+		}
+		int y = 0;
+		foreach (int z in starterSquares) {
+			starterSquaresArray[y] = z;
+		//	Debug.Log ("starterSquaresArray is" + starterSquaresArray [y]);
+			y++;
+
+		}
+
+		return starterSquaresArray;
+	}
 
 }

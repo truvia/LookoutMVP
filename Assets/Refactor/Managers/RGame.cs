@@ -29,20 +29,20 @@ namespace RLookout{
 
 		//Actions
 
-		public int[] conArmiesStartLocationStrengths = new int[3];
-		public int[] uSAArmiesStartLocationStrengths = new int[3];
+		public int[] conArmiesStartLocations = new int[3];
+		public int[] usArmiesStartLocations = new int[3];
 
 		public Mark control { get; private set;}
 		public Mark winner {get; private set;}
 		public Mark startPlayer = Mark.CON; //sets start player as the Confederates
 		public Dictionary<string, Square> squareDictionary = new Dictionary<string, Square>();
-		public int boardWidth = 5;
-		public int boardHeight = 5;
+		public int boardWidth = 6; //N.B. remember to change the size of the box collider on the board gameobject as well as changing the win conditions immediately below, if the fotress is moved
+		public int boardHeight = 6;
 
 	
 
 		private string[] wins = new string[] {
-			"0 , 4", "4 , 0"
+			"1 , 4", "4 , 1"
 		};
 
 
@@ -131,44 +131,62 @@ namespace RLookout{
 			//Defines Possible Start Squares
 			string[] USPossibleStartSquares = new string[] {
 				"3 , 0",
+				"4 , 0",
+				"5 , 0",
 				"3 , 1",
-				"4 , 1"
+				"5 , 1",
+				"3 , 2",
+				"4 , 2",
+				"4 , 2"
 			};
 
 			string[] ConPossibleStartSquares = new string[] {
 				"0 , 3",
+				"0 , 4",
+				"0 , 5", 
 				"1 , 3",
-				"1 , 4"
+				"1 , 5",
+				"2 , 3", 
+				"2 , 4",
+				"2 , 5"
 			};
 
-			int i = 0;
 
-			foreach (int strength in uSAArmiesStartLocationStrengths) {
-				if (strength != 0) {
-							
-					ConstructNewUnit (USPossibleStartSquares [i], Mark.USA, UnitType.Army, strength);		
-
-				}
-				i++;
-
+			foreach (int squarenumber in conArmiesStartLocations) {
+				ConstructNewUnit (USPossibleStartSquares [squarenumber], Mark.USA, UnitType.Army, 5000);
 			}
-			i = 0;
 
-			foreach (int strength in conArmiesStartLocationStrengths) {
-				if (strength != 0) {
-					ConstructNewUnit (ConPossibleStartSquares [i], Mark.CON, UnitType.Army, strength);		
-
-				}
-				i++;
+			foreach (int squareNumber in usArmiesStartLocations) {
+				ConstructNewUnit(ConPossibleStartSquares[squareNumber], Mark.CON, UnitType.Army, 5000);
 			}
+//			int i = 0;
+
+//			foreach (int strength in uSAArmiesStartLocationStrengths) {
+//				if (strength != 0) {
+//							
+//					ConstructNewUnit (USPossibleStartSquares [i], Mark.USA, UnitType.Army, strength);		
+//
+//				}
+//				i++;
+//
+//			}
+//			i = 0;
+//
+//			foreach (int strength in conArmiesStartLocationStrengths) {
+//				if (strength != 0) {
+//					ConstructNewUnit (ConPossibleStartSquares [i], Mark.CON, UnitType.Army, strength);		
+//
+//				}
+//				i++;
+//			}
 				
 //
 			//FORTRESSES
-			string USFortress = "4 , 0"; 
-			string CONFortress = "0 , 4";
+			string USFortress = "4 , 1"; 
+			string CONFortress = "1 , 4";
 
-			ConstructNewUnit (USFortress, Mark.USA, UnitType.Fortress, 2000);
-			ConstructNewUnit (CONFortress, Mark.CON, UnitType.Fortress, 2000);
+			ConstructNewUnit (USFortress, Mark.USA, UnitType.Fortress, 8000);
+			ConstructNewUnit (CONFortress, Mark.CON, UnitType.Fortress, 8000);
 
 
 		}
@@ -201,13 +219,27 @@ namespace RLookout{
 			//Debug.Log("Construct New Unit: " + squareDictionary[Coords].unitOccupyingSquare.ToString());
 		}
 
-		public void DefineStartPositions(int[] CONArmiesStrength, int[] USArmiesStrength){
-			conArmiesStartLocationStrengths = CONArmiesStrength;
-			uSAArmiesStartLocationStrengths = USArmiesStrength;
+		public void SetStartPositions(int[] CONArmiesStrength, int[] USArmiesStrength){
+			conArmiesStartLocations = CONArmiesStrength;
+			usArmiesStartLocations = USArmiesStrength;
 
 			//called from player controller right now....
 		
 
+		}
+
+		public List<RUnit> FindUnitsByAllegiance(Mark thisAllegiance){
+			List<RUnit> unitsOfThisAllegiance = new List<RUnit> ();
+			foreach (KeyValuePair<string, Square> keyValue in squareDictionary) {
+				string coords = keyValue.Key;
+				Square square = keyValue.Value;
+				if (square.squareOccupied) {
+					if(square.unitOccupyingSquare.allegiance == thisAllegiance){
+						unitsOfThisAllegiance.Add (square.unitOccupyingSquare);
+					}
+				}
+			}
+			return unitsOfThisAllegiance;
 		}
 
 

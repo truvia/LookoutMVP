@@ -63,7 +63,7 @@ public class UIController : MonoBehaviour {
 		}
 		controlText.text = gameController.game.control.ToString();
 
-		strengthText.text = gameController.game.conArmiesStartLocationStrengths [0].ToString () + " , " + gameController.game.conArmiesStartLocationStrengths [1].ToString () + " , " + gameController.game.conArmiesStartLocationStrengths [2].ToString () + " , " + gameController.game.uSAArmiesStartLocationStrengths [0].ToString () + " , " + gameController.game.uSAArmiesStartLocationStrengths [1].ToString () + " , " + gameController.game.uSAArmiesStartLocationStrengths [2].ToString ();
+		strengthText.text = gameController.game.conArmiesStartLocations [0].ToString () + " , " + gameController.game.conArmiesStartLocations [1].ToString () + " , " + gameController.game.conArmiesStartLocations [2].ToString () + " , " + gameController.game.usArmiesStartLocations [0].ToString () + " , " + gameController.game.usArmiesStartLocations [1].ToString () + " , " + gameController.game.usArmiesStartLocations [2].ToString ();
 
 	}
 

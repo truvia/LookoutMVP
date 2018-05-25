@@ -77,7 +77,7 @@ public class RPlayerController : NetworkBehaviour {
 				string originalPieceCoords = keyValue.Key;
 				int[] MoveToCoords = keyValue.Value;
 				CmdBroadcastEnqueuedMovements (originalPieceCoords, MoveToCoords);
-				Debug.Log ("sending across original coords: " + originalPieceCoords + " and moveTo coords " + MoveToCoords [0] + " , " + MoveToCoords [1]);
+				//Debug.Log ("sending across original coords: " + originalPieceCoords + " and moveTo coords " + MoveToCoords [0] + " , " + MoveToCoords [1]);
 			}
 			enqueueSystem.enquedPieceMovement.Clear (); //empty the list of movements made by the player who just pushed end turn's on that machine (should this go in gameController?);
 
@@ -183,49 +183,41 @@ public class RPlayerController : NetworkBehaviour {
 
 	[Command]
 		void CmdDefineStartPositions(){
-		bool conThreeOrTwoArmies = Random.value < 0.5;
-		bool usThreeOrTwoArmies = Random.value < 0.5;
 
-		int[] USArmiesStrength = new int[] {
-			//0 means no unit instantiated
-			0,
-			0,
-			0
-		};
+		int[] conStarterSquares = gameController.DefineStartPositions ();
+		int[] usStarterSquares = gameController.DefineStartPositions ();
 
-		int[] CONArmiesStrength = new int[] {
-			//0 means no unit instantiated
-			0,
-			0,
-			0, 
-		};
+		RpcDefineStartPositions (conStarterSquares, usStarterSquares);
+//
+//		for (int i = 0; i < 3; i++) {
+//			if (i < 2 || conThreeOrTwoArmies) {
+//				CONArmiesStrength [i] = Mathf.RoundToInt (Random.Range (0f, 5000f));
+//			}
+//
+//			if (i < 2 || usThreeOrTwoArmies) {
+//				USArmiesStrength [i] = Mathf.RoundToInt (Random.Range (0f, 5000f));
+//			}
 
-
-		for (int i = 0; i < 3; i++) {
-			if (i < 2 || conThreeOrTwoArmies) {
-				CONArmiesStrength [i] = Mathf.RoundToInt (Random.Range (0f, 5000f));
-			}
-
-			if (i < 2 || usThreeOrTwoArmies) {
-				USArmiesStrength [i] = Mathf.RoundToInt (Random.Range (0f, 5000f));
-			}
-
-		}
+	//	}
 
 	
 		//if true = three armies
 		//if false = two armies
 
-			RpcDefineStartPositions (CONArmiesStrength, USArmiesStrength);
+	//		RpcDefineStartPositions (CONArmiesStrength, USArmiesStrength);
 	}
 
 
 	[ClientRpc]
 	void RpcDefineStartPositions(int[] CONArmiesStrength, int[] USArmiesStrength){
 		gameController.DestroyAllUnits ();
-		gameController.game.DefineStartPositions(CONArmiesStrength, USArmiesStrength);
+		gameController.game.SetStartPositions(CONArmiesStrength, USArmiesStrength);
 		gameController.game.ResetGame ();
 	}
+//	[ClientRpc]
+//	void RpcDefineStartPositions(ArrayList conArmiesStrength, ArrayList usArmiesStrength){
+//		
+//	}
 
 	[Command]
 	void CmdBroadcastEnqueuedMovements(string originalPiece, int[] coordsToMoveTo){

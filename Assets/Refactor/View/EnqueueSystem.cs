@@ -5,9 +5,11 @@ using UnityEngine;
 public class EnqueueSystem : MonoBehaviour {
 
 	public Dictionary<string, int[]> enquedPieceMovement = new Dictionary<string, int[]>();
+	public bool preventInput = false;
 
 	private RGameController gameController;
 	private UIController uiController;
+
 
 	// Use this for initialization
 	void Start () {
@@ -29,6 +31,7 @@ public class EnqueueSystem : MonoBehaviour {
 	}
 
 	public void CallDequeuePieces(){
+		preventInput = true;
 		uiController.ToggleShowPreventUserInputPanel ("Showing Enemy Movements...");
 		StartCoroutine(DequeuePieces ());
 
@@ -40,7 +43,6 @@ public class EnqueueSystem : MonoBehaviour {
 			string originalCoords = keyValue.Key;
 			int[] coordsToMoveTo = keyValue.Value;
 			Debug.Log ("dequeue pieces" + "original coords: " + originalCoords + " , coordsToMoveTo: " + coordsToMoveTo[0] + " , " + coordsToMoveTo[1]);
-
 			RUnit unit = gameController.game.squareDictionary [originalCoords].unitOccupyingSquare;
 			GameObject gameObjectOfUnit = gameController.FindUnitByUnitDictionary (unit);
 			yield return StartCoroutine (WaitAndMove (2.0f, gameObjectOfUnit, coordsToMoveTo));
@@ -58,5 +60,6 @@ public class EnqueueSystem : MonoBehaviour {
 	IEnumerator WaitAndRefreshBoard(float waitfortime){
 		yield return new WaitForSeconds (waitfortime);
 		gameController.RefreshBoard (null);
+		preventInput = false;
 	}
 }

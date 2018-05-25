@@ -22,10 +22,12 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 	public GameObject greenSelectionSquarePrefab;
 	public GameObject blueSelectionSquarePrefab;
 	public GameObject unitMount;
+	public GameObject fogOfWarPrefab;
 
 	void Start(){
 		gameController = FindObjectOfType<RGameController> ();
 	}
+
 
 	public void Place(RUnit unit){
 		int[] coords = gameController.ConvertStringToArray (unit.coords, 2);
@@ -35,12 +37,11 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 	}
 
 	void IPointerClickHandler.OnPointerClick(PointerEventData eventData){
+		//N.B. if you change the size of the board you need to change the size of the box collider on the board gameobject, because this is reliant on that box collider.
 		if (eventData.button == PointerEventData.InputButton.Right) {
-			//Debug.Log ("clicked");
 			Vector3 pos = eventData.pointerCurrentRaycast.worldPosition;
 			int x = Mathf.FloorToInt (pos.x);
 			int z = Mathf.FloorToInt (pos.z);
-
 			if (x < 0 || z < 0 || x > gameController.game.boardWidth || z > gameController.game.boardHeight) {
 				return;
 			}
@@ -78,7 +79,6 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 
 					if (selectorCoord.x < 0.5f || selectorCoord.z < 0.5f || selectorCoord.x > gameController.game.boardWidth || selectorCoord.z > gameController.game.boardHeight) {
 						// don't instantiate out of range ie. do nothing (return cancels the loop)
-
 					} else if (gameController.game.squareDictionary [coordsAsString].squareOccupied) {
 						//if there is a unit there
 						if (gameController.game.squareDictionary [coordsAsString].unitOccupyingSquare.allegiance == unit.allegiance && gameController.game.squareDictionary [coordsAsString].unitOccupyingSquare.unitType == UnitType.Army) {
@@ -168,4 +168,90 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 
 	}
 
+	public void RegenerateFogOfWar(){
+		DestroyFogOfWar ();
+		foreach (KeyValuePair<string, Square> keyValue in gameController.game.squareDictionary) {
+			Debug.Log ("Generated fog of war");
+			string coords = keyValue.Key;
+			Square square = keyValue.Value;
+
+			int[] intCoords = gameController.ConvertStringToArray (coords, 2);
+
+			if (!square.squareOccupied || square.unitOccupyingSquare.allegiance != gameController.localPlayerController.myAllegiance) {			
+
+				GameObject fogOfWarInstantiation = Instantiate (fogOfWarPrefab);
+				fogOfWarInstantiation.transform.position = new Vector3 (intCoords [0] + 0.5f, 0f, intCoords [1] + 0.5f);
+				fogOfWarInstantiation.transform.rotation = Quaternion.identity;
+				fogOfWarInstantiation.transform.parent = this.transform.parent;
+			}
+
+
+		}
+
+		List<RUnit> allMyUnits = gameController.game.FindUnitsByAllegiance (gameController.localPlayerController.myAllegiance);
+		List<string> coordsToClearFogOfWar = new List<string> ();
+
+		foreach (RUnit unit in allMyUnits) {
+			int[] intCoords = gameController.ConvertStringToArray (unit.coords, 2);
+
+
+			for (int x = -1; x <= 1; x++) {
+				for (int z = -1; z <= 1; z++) {
+
+
+					int[] coordsToClear = new int[2];
+					coordsToClear [0] = (intCoords [0] + x);
+					coordsToClear [1] = (intCoords [1] + z);
+
+					if (coordsToClear [0] < 0f || coordsToClear [1] < 0f || coordsToClear [0] > gameController.game.boardWidth || coordsToClear [1] > gameController.game.boardHeight) {
+					
+					} else {
+
+
+						string stringCoords = coordsToClear [0] + " , " + coordsToClear [1];
+						coordsToClearFogOfWar.Add (stringCoords);
+//					Debug.Log ("intCoords " + (intCoords [0] + x) + " , " + (intCoords [1] + z));
+//					Debug.Log ("Coords to clear: " + coordsToClear [0] + " , " + coordsToClear [1]);
+//					Debug.Log ("string coords are : " + stringCoords);
+
+
+					}
+				}
+			}
+		}
+
+		FogOfWar[] fogsOfWarSquares = FindObjectsOfType<FogOfWar> ();
+
+		foreach (FogOfWar fogOfWar in fogsOfWarSquares) {
+
+
+
+			int[] fogOfWarCoords = new int[2];
+			fogOfWarCoords [0] = Mathf.RoundToInt (fogOfWar.transform.position.x - 0.5f);
+			fogOfWarCoords [1] = Mathf.RoundToInt (fogOfWar.transform.position.z - 0.5f);
+			string fogOfWarStringCoords = fogOfWarCoords [0] + " , " + fogOfWarCoords [1];
+			//Debug.Log ("coords to destroy = " + fogOfWarCoords [0] + " , " + fogOfWarCoords [1]);
+
+			if (coordsToClearFogOfWar.Contains (fogOfWarStringCoords)) {
+				//	Debug.Log ("coords to destroy are: " + fogOfWarStringCoords);
+				Destroy (fogOfWar.gameObject);
+			}
+
+		}
+	}
+		public void DestroyFogOfWar(){
+			
+			FogOfWar[] allFogOfWar = FindObjectsOfType<FogOfWar>();
+			foreach (FogOfWar fog in allFogOfWar) {
+				Destroy (fog.gameObject);
+			}
+
+		}
+
+
+
 }
+
+
+
+
