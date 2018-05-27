@@ -36,13 +36,11 @@ namespace RLookout{
 		public Mark winner {get; private set;}
 		public Mark startPlayer = Mark.CON; //sets start player as the Confederates
 		public Dictionary<string, Square> squareDictionary = new Dictionary<string, Square>();
-		public int boardWidth = 6; //N.B. remember to change the size of the box collider on the board gameobject as well as changing the win conditions immediately below, if the fotress is moved
-		public int boardHeight = 6;
-
-	
+		public int boardWidth = 8; //N.B. remember to change the size of the box collider on the board gameobject as well as changing the win conditions immediately below, if the fotress is moved
+		public int boardHeight = 8;
 
 		private string[] wins = new string[] {
-			"1 , 4", "4 , 1"
+			"1 , 6", "6 , 1"
 		};
 
 
@@ -130,25 +128,25 @@ namespace RLookout{
 
 			//Defines Possible Start Squares
 			string[] USPossibleStartSquares = new string[] {
-				"3 , 0",
-				"4 , 0",
 				"5 , 0",
-				"3 , 1",
+				"6 , 0",
+				"7 , 0",
 				"5 , 1",
-				"3 , 2",
-				"4 , 2",
-				"4 , 2"
+				"7 , 1",
+				"5 , 2",
+				"6 , 2",
+				"7 , 2"
 			};
 
 			string[] ConPossibleStartSquares = new string[] {
-				"0 , 3",
-				"0 , 4",
-				"0 , 5", 
-				"1 , 3",
+				"0 , 5",
+				"0 , 6",
+				"0 , 7", 
 				"1 , 5",
-				"2 , 3", 
-				"2 , 4",
-				"2 , 5"
+				"1 , 7",
+				"2 , 5", 
+				"2 , 6",
+				"2 , 7"
 			};
 
 
@@ -182,8 +180,8 @@ namespace RLookout{
 				
 //
 			//FORTRESSES
-			string USFortress = "4 , 1"; 
-			string CONFortress = "1 , 4";
+			string USFortress = "6 , 1"; 
+			string CONFortress = "1 , 6";
 
 			ConstructNewUnit (USFortress, Mark.USA, UnitType.Fortress, 8000);
 			ConstructNewUnit (CONFortress, Mark.CON, UnitType.Fortress, 8000);
