@@ -9,7 +9,7 @@ public class UIController : MonoBehaviour {
 	public const string DidRequestEndTurn = "Display.DidBeginGameNotification";
 	public GameObject NetworkingHUD;
 	public GameObject GameplayHUD;
-	public GameObject MergeUnitHUD;
+	public GameObject PromptUserHUD;
 	public GameObject UnitHUD;
 	public GameObject BasicInfoPopup;
 	public GameObject preventUserInputPanel;
@@ -33,6 +33,7 @@ public class UIController : MonoBehaviour {
 
 	//Developer Only Code
 	public const string DidRequestResetGame = "Display.DidRequestResetGame"; 
+	public const string DidRequestSplitUnit = "UIController.DidREquestSplitUnit";
 
 	void Awake(){
 		didStartLocalPlayerNotificationAction = new UnityAction<System.Object> (OnLocalPlayerStarted); //defines what action that this object should take when the event is triggered
@@ -100,15 +101,14 @@ public class UIController : MonoBehaviour {
 
 	public void MergeUnits(){
 		Debug.Log ("Merge Requested");
-		HideHUD (MergeUnitHUD);
+		HideHUD (PromptUserHUD);
 		gameController.MergeUnits ();
 		mouseMover.trackMouseMove = true;
-
 	}
 
 	public void CancelInput(){
-		Debug.Log ("Merge cancelled");
-		HideHUD (MergeUnitHUD);
+		Debug.Log ("InputCancelled cancelled");
+		HideHUD (PromptUserHUD);
 		mouseMover.trackMouseMove = true;
 	}
 
@@ -122,9 +122,9 @@ public class UIController : MonoBehaviour {
 //	}
 
 	public void WaitForUser(string question, UnityAction myYesButtonPressed, UnityAction myNoButtonPressed){
-		MergeUnitHUD.GetComponentInChildren<Text> ().text = question;
+		PromptUserHUD.GetComponentInChildren<Text> ().text = question;
 		mouseMover.trackMouseMove = false;
-		ShowHUD (MergeUnitHUD);
+		ShowHUD (PromptUserHUD);
 
 		myYesButton.onClick.RemoveAllListeners ();
 		myNoButton.onClick.RemoveAllListeners ();
@@ -181,6 +181,46 @@ public class UIController : MonoBehaviour {
 		panelText.text = notificationText;
 		preventUserInputPanel.SetActive(preventUserInputPanel.activeSelf ? false : true);
 
+	}
+
+	public void RequestSplitUnit(){
+
+		Debug.Log ("uiController.RequestSplitUnit");
+		//unit to spliy is gameController.selectedUnit;
+		RBoard board = FindObjectOfType<RBoard>();
+
+		if (gameController.selectedUnit.strength < 1500) {
+			SetBasicInfoText ("Your unit is too small to split", "okey-dokey");
+			ShowHUD (BasicInfoPopup);
+		} else if (gameController.selectedUnit.numMoves < 1){
+			SetBasicInfoText ("Not enough moves to split", "Darn");
+			ShowHUD (BasicInfoPopup);
+		}else if (board.possibleMovementCoords.Count > 0) {
+			string question = "Do you want to split this unit in half?";
+			UnityAction yesAction = new UnityAction (() => {
+				SplitAction ();
+			});
+			UnityAction noAction = new UnityAction (() => {
+				CancelInput ();
+			});
+
+
+			PromptUser (question, yesAction, noAction);	
+		} else {
+			SetBasicInfoText ("Sorry, you don't have any space to split your army", "FINE!");
+			ShowHUD (BasicInfoPopup);
+		}
+		
+		}
+
+	private void SplitAction(){
+		HideHUD (PromptUserHUD);
+		gameController.selectedGameObject.GetComponent<RUnit> ().SplitUnit ();
+	}
+
+	public void PromptUser(string question, UnityAction yesAction, UnityAction noAction){
+		//mehtod to ask the user what action they want to take, using uiController; common methods include uiController.CancelInput for no; 
+		WaitForUser (question, yesAction, noAction);
 	}
 }
 

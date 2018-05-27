@@ -12,7 +12,7 @@ public class CameraPan : MonoBehaviour {
 	private bool zoomOutPossible = true;
 	private int thisScreenWidth;
 	private int thisScreenHeight;
-	private int boundary = 50;
+	private int boundary = 10;
 	// Use this for initialization
 	void Start () {
 		startPosition = transform.position;

@@ -126,5 +126,38 @@ public class RUnit : MonoBehaviour {
 
 	}
 
+	public void SplitUnit(){
+		Debug.Log("Unit split requested");
+		RUnit squareDictionaryRUnit = GetSquareDictionaryRUnitByCoords (coords);
+
+		strength = strength / 2;
+		squareDictionaryRUnit.strength = strength;
+
+		//Get a random square that is available for this unit to move into , in order to instantiate the new piece into.
+		int[] coordsToInstantiateSplitUnit = board.possibleMovementCoords [Random.Range (0, board.possibleMovementCoords.Count)]; // get a random avaialbe square that this piece could have moved into that we can place the piece in, 
+		string stringCoordsToInstantiateSplitUnit = gameController.ConvertArrayToString (coordsToInstantiateSplitUnit); //convert these coords to string
+
+		gameController.game.ConstructNewUnit (stringCoordsToInstantiateSplitUnit, allegiance, unitType, strength); //create a new unit in the SquareDictionary
+		gameController.game.squareDictionary [stringCoordsToInstantiateSplitUnit].unitOccupyingSquare.numMoves = 0; // set the new units numMOves to 0; 
+		board.Place (gameController.game.squareDictionary [stringCoordsToInstantiateSplitUnit].unitOccupyingSquare); // and now instantiate this piece on the actual board
+		board.RegenerateFogOfWar(); //regenerate fog of war (as the unit might have been placed on the border 
+
+		//Take a move and sync this unit to the game.squareDictionary RUnit.
+		squareDictionaryRUnit.numMoves -= 1; //take a move
+		gameController.SyncSceneUnitToDictionaryUnit (squareDictionaryRUnit, this.gameObject); // and sync this unit's value to the dictionary above. 
+
+		board.DeselectPiece (); //clear the selector squares, hide the UnitHUD and deselect the unit in gameController.
+
+	}
+
+	private RUnit GetSquareDictionaryRUnitByCoords(string coordsToSearchFor){
+		if (gameController.game.squareDictionary [coordsToSearchFor].squareOccupied) {
+			return gameController.game.squareDictionary [coordsToSearchFor].unitOccupyingSquare;
+		} else {
+			Debug.Log ("Error! The Game.SquareDictionary has no unit occupying the square at these coords : " + coordsToSearchFor);
+			return null;
+		}
+
+	}
 
 }

@@ -115,10 +115,10 @@ public class RGameController : NetworkBehaviour {
 			if (unitSelected) {
 			//	Debug.Log ("unit selected");
 			// A piece is currently selected
-			//	RUnit squareDictionarySelectedPiece = game.squareDictionary[selectedUnit.GetComponent<RUnit>().coords].unitOccupyingSquare;
-			if (game.control == localPlayerController.myAllegiance) {
+
+				if (game.control == localPlayerController.myAllegiance) { //if it is my turn;
 			//	Debug.Log (" a piece is selected");
-				for (int i = 0; i < board.possibleMovementCoords.Count; i++) {
+					for (int i = 0; i < board.possibleMovementCoords.Count; i++) {  //if there is a moveable Square;
 
 					int[] intArray = board.possibleMovementCoords [i];
 					if (intArray [0] == intCoords [0] && intArray [1] == intCoords [1]) {
@@ -149,8 +149,17 @@ public class RGameController : NetworkBehaviour {
 						//Debug.Log (mergeUnit.coords + " merge unit coords are this and is there a unit occupying square? " + game.squareDictionary[stringCoords].squareOccupied + " and stringcoords are " + stringCoords);
 						//originalPiece = selector.selectedPiece;
 						if (selectedUnit.numMoves > 0 && mergeUnit.numMoves > 0) {
+			
+							//tells UI controlelr to request merge or not.						
+								UnityAction mergeAction = new UnityAction (() => {
+									uiController.MergeUnits (); //hides hUD and calls Gamecontroller.MergeUnits
+								});
 
-							PromptUser ();
+								UnityAction cancelAction = new UnityAction (() => {
+									uiController.CancelInput();	//cancels the merge;
+								});
+									
+								uiController.PromptUser("Do you want to merge units of strength " + selectedUnit.strength + " and  new unit " + mergeUnit.strength + "?", mergeAction, cancelAction);
 						} else {
 							uiController.SetBasicInfoText ("Both units don't have enough moves to merge!", "Sorry!");
 							uiController.ShowHUD (uiController.BasicInfoPopup);
@@ -268,13 +277,15 @@ public class RGameController : NetworkBehaviour {
 		return null;
 	}
 
-	public void PromptUser(){
-		uiController.WaitForUser("Do you want to merge units of strength " + selectedUnit.strength + " and  new unit " + mergeUnit.strength + "?", new UnityAction ( () => {
-			uiController.MergeUnits();
-		}), new UnityAction( () => {
-			uiController.CancelInput();
-		}));
-	}
+//	public void PromptUser(){
+//		uiController.WaitForUser("Do you want to merge units of strength " + selectedUnit.strength + " and  new unit " + mergeUnit.strength + "?", new UnityAction ( () => {
+//			uiController.MergeUnits();
+//		}), new UnityAction( () => {
+//			uiController.CancelInput();
+//		}));
+//	}
+
+
 
 
 
@@ -291,6 +302,7 @@ public class RGameController : NetworkBehaviour {
 		}
 		Destroy (selectedGameObject);
 		board.DeselectPiece ();
+		board.RegenerateFogOfWar ();
 	
 	}
 
@@ -362,5 +374,7 @@ public class RGameController : NetworkBehaviour {
 
 		return starterSquaresArray;
 	}
+
+
 
 }

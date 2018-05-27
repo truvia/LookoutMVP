@@ -27,7 +27,7 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 	void Start(){
 		gameController = FindObjectOfType<RGameController> ();
 	}
-
+		
 
 	public void Place(RUnit unit){
 		int[] coords = gameController.ConvertStringToArray (unit.coords, 2);
