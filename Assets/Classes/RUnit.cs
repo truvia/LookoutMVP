@@ -11,10 +11,10 @@ public class RUnit : MonoBehaviour {
 	public Mark allegiance;
 	public string coords;
 	public int numMoves = 0;
+	public int defensiveBonus;
 
 	//Classes used by Runit
 	private RGameController gameController;
-	private RSelector selector;
 	private UIController uiController;
 	private RBoard board;
 
@@ -30,7 +30,6 @@ public class RUnit : MonoBehaviour {
 	void Start () {
 		//used to initialise
 		gameController = FindObjectOfType<RGameController> ();
-		selector = FindObjectOfType<RSelector> ();
 		uiController = FindObjectOfType<UIController> ();
 		board = FindObjectOfType<RBoard> ();
 	}
@@ -96,6 +95,7 @@ public class RUnit : MonoBehaviour {
 			newMount.tag = "unitMount";
 
 	}
+		
 
 	public void MoveTowardsAPlace(int[] intCoords){
 
@@ -139,7 +139,7 @@ public class RUnit : MonoBehaviour {
 
 		gameController.game.ConstructNewUnit (stringCoordsToInstantiateSplitUnit, allegiance, unitType, strength); //create a new unit in the SquareDictionary
 		gameController.game.squareDictionary [stringCoordsToInstantiateSplitUnit].unitOccupyingSquare.numMoves = 0; // set the new units numMOves to 0; 
-		board.Place (gameController.game.squareDictionary [stringCoordsToInstantiateSplitUnit].unitOccupyingSquare); // and now instantiate this piece on the actual board
+		board.PlaceUnit (gameController.game.squareDictionary [stringCoordsToInstantiateSplitUnit].unitOccupyingSquare); // and now instantiate this piece on the actual board
 		board.RegenerateFogOfWar(); //regenerate fog of war (as the unit might have been placed on the border 
 
 		//Take a move and sync this unit to the game.squareDictionary RUnit.
@@ -159,5 +159,21 @@ public class RUnit : MonoBehaviour {
 		}
 
 	}
+
+	public void AddDefensiveBonus(int bonusAmount){
+		defensiveBonus += bonusAmount;
+	}
+
+	public void RemoveDefensiveBonus(){
+		defensiveBonus = 0;
+	}
+
+
+
+
+
+
+
+
 
 }

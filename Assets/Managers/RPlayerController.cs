@@ -10,8 +10,6 @@ public class RPlayerController : NetworkBehaviour {
 
 	public const string DidStartLocalPlayer = "RPlayerController.DidStartLocalPlayer";
 
-
-
 	public Mark myAllegiance;
 	private RGameController gameController;
 	private UnityAction<System.Object> endTurnRequestNotification;
@@ -34,14 +32,14 @@ public class RPlayerController : NetworkBehaviour {
 	}
 
 	void OnEnable(){
-		EventManager.StartListening(UIController.DidRequestEndTurn, endTurnRequestNotification); 
+		EventManager.StartListening(RGameController.DidRequestEndTurn, endTurnRequestNotification); 
 		EventManager.StartListening (RGame.DidEndGameNotification, didEndGameNotificationAction);
 		//Developer area
 		EventManager.StartListening(UIController.DidRequestResetGame, didRequestResetGameNotificationAction);
 	}
 
 	void OnDisable(){
-		EventManager.StopListening(UIController.DidRequestEndTurn, endTurnRequestNotification);	
+		EventManager.StopListening(RGameController.DidRequestEndTurn, endTurnRequestNotification);	
 		EventManager.StopListening (RGame.DidEndGameNotification, didEndGameNotificationAction);
 		EventManager.StopListening (UIController.DidRequestResetGame, didRequestResetGameNotificationAction);
 	}
@@ -69,8 +67,6 @@ public class RPlayerController : NetworkBehaviour {
 	void ChangeTurn(object obj){
 
 		if (isLocalPlayer && gameController.game.control == myAllegiance) { //only runs from whoever has control
-		
-
 
 			//sends the movements made by this player to the other player's machine
 			foreach (KeyValuePair<string, int[]> keyValue in enqueueSystem.enquedPieceMovement) {
@@ -94,12 +90,14 @@ public class RPlayerController : NetworkBehaviour {
 				int strength;
 				UnitType unitType;
 				int numMoves;
+				int defensiveBonus;
 
 				if (squareOccupied) {
 					 allegiance = value.unitOccupyingSquare.allegiance;
 					 coords = value.unitOccupyingSquare.coords;
 					 strength = value.unitOccupyingSquare.strength;
 					 unitType = value.unitOccupyingSquare.unitType;
+					defensiveBonus = value.unitOccupyingSquare.defensiveBonus;
 
 					if (value.unitOccupyingSquare.unitType == UnitType.Army) {
 						numMoves = 1;
@@ -114,9 +112,10 @@ public class RPlayerController : NetworkBehaviour {
 					 strength = 0;
 					 unitType = UnitType.None;
 					numMoves = 0;
+					defensiveBonus = 0;
 				}
 
-			CmdBroadcastSquareDictionary (key, squareOccupied, allegiance, coords, strength, unitType, numMoves);
+				CmdBroadcastSquareDictionary (key, squareOccupied, allegiance, coords, strength, unitType, numMoves, defensiveBonus);
 				//Debug.Log ("Game.LoopThroughUnitDictionary: coords are " + key + " and unit occupying square is " + value.squareOccupied);
 			} 
 		}
@@ -150,12 +149,12 @@ public class RPlayerController : NetworkBehaviour {
 	}
 
 	[Command]
-	void CmdBroadcastSquareDictionary(string key, bool squareOccupied, Mark allegiance, string coords, int strength, UnitType unitType, int numMoves){
-		RpcBroadcastSquareDictionary (key, squareOccupied, allegiance, coords, strength, unitType, numMoves);
+	void CmdBroadcastSquareDictionary(string key, bool squareOccupied, Mark allegiance, string coords, int strength, UnitType unitType, int numMoves, int defensiveBonus){
+		RpcBroadcastSquareDictionary (key, squareOccupied, allegiance, coords, strength, unitType, numMoves, defensiveBonus);
 	}
 
 	[ClientRpc]
-	void RpcBroadcastSquareDictionary (string key, bool squareOccupied, Mark allegiance, string coords, int strength, UnitType unitType, int numMoves){
+	void RpcBroadcastSquareDictionary (string key, bool squareOccupied, Mark allegiance, string coords, int strength, UnitType unitType, int numMoves, int defensiveBonus){
 
 		//gameController.game.squareDictionary [key].squareOccupied = squareOccupied;
 
@@ -167,6 +166,12 @@ public class RPlayerController : NetworkBehaviour {
 			gameController.game.squareDictionary [key].unitOccupyingSquare.strength = strength;
 			gameController.game.squareDictionary [key].unitOccupyingSquare.unitType = unitType;
 			gameController.game.squareDictionary [key].unitOccupyingSquare.numMoves = numMoves;
+			gameController.game.squareDictionary [key].unitOccupyingSquare.defensiveBonus = defensiveBonus;
+		
+			if (gameController.game.squareDictionary [key].isCitySquare) {
+				gameController.game.squareDictionary [key].cityOccupyingSquare.occupiedBy = allegiance;
+			}
+		
 		} else if(gameController.game.squareDictionary[key].squareOccupied) {
 			
 			gameController.game.squareDictionary [key].squareOccupied = false;
@@ -175,6 +180,7 @@ public class RPlayerController : NetworkBehaviour {
 			gameController.game.squareDictionary [key].unitOccupyingSquare.strength = strength;
 			gameController.game.squareDictionary [key].unitOccupyingSquare.unitType = unitType;
 			gameController.game.squareDictionary [key].unitOccupyingSquare.numMoves = numMoves;
+
 		}
 			
 
@@ -210,7 +216,7 @@ public class RPlayerController : NetworkBehaviour {
 
 	[ClientRpc]
 	void RpcDefineStartPositions(int[] CONArmiesStrength, int[] USArmiesStrength){
-		gameController.DestroyAllUnits ();
+		gameController.DestroyAllUnitsInScene ();
 		gameController.game.SetStartPositions(CONArmiesStrength, USArmiesStrength);
 		gameController.game.ResetGame ();
 	}
@@ -233,6 +239,7 @@ public class RPlayerController : NetworkBehaviour {
 
 	#region DeveloperDebugOnly
 	void RequestResetGame(object obj){
+
 		//Debug.Log ("Request Reset Game called");
 		CmdDefineStartPositions ();
 	}

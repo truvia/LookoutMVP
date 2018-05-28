@@ -16,8 +16,9 @@ public class Square : MonoBehaviour {
 	}
 
 	public RUnit unitOccupyingSquare;
-
 	public bool squareOccupied = false;
+	public bool isCitySquare = false;
+	public City cityOccupyingSquare;
 
 
 }

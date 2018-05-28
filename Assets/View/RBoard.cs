@@ -13,6 +13,7 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 
 	public RArmySpawner CONArmySpawner;
 	public RArmySpawner USArmySpawner;
+	public CitySpawner citySpawner;
 	public Transform selectionSquaresSpawner;
 	public List<int[]> possibleMovementCoords = new List<int[]> ();
 	public List<int[]> battleSquareCoords = new List<int[]> ();
@@ -24,16 +25,23 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 	public GameObject unitMount;
 	public GameObject fogOfWarPrefab;
 
+
 	void Start(){
 		gameController = FindObjectOfType<RGameController> ();
 	}
 		
 
-	public void Place(RUnit unit){
+	public void PlaceUnit(RUnit unit){
 		int[] coords = gameController.ConvertStringToArray (unit.coords, 2);
 		RArmySpawner armySpawner = unit.allegiance == Mark.CON ? CONArmySpawner : USArmySpawner;
 		Vector3 location = new Vector3 (coords [0] + 0.5f, 0.05f, coords [1] + 0.5f);
 		armySpawner.InstantiatePrefab (location, unit);
+	}
+
+	public void PlaceCity(City city){
+		int[] coords = gameController.ConvertStringToArray (city.coords, 2);
+		Vector3 location = new Vector3 (coords [0] + 0.5f, 0f, coords [1] + 0.5f);
+		citySpawner.InstantiateCityPrefab (location, city);
 	}
 
 	void IPointerClickHandler.OnPointerClick(PointerEventData eventData){
@@ -83,6 +91,7 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 						//if there is a unit there
 						if (gameController.game.squareDictionary [coordsAsString].unitOccupyingSquare.allegiance == unit.allegiance && gameController.game.squareDictionary [coordsAsString].unitOccupyingSquare.unitType == UnitType.Army) {
 							//if it is a unit of my allegiance there
+
 							if (unit.coords != coordsAsString) {
 								//stops a blue square forming on original position;
 								selectionSquare = blueSelectionSquarePrefab;
@@ -105,8 +114,7 @@ public class RBoard : MonoBehaviour, IPointerClickHandler {
 						}
 
 
-					}
-						else {
+					} else {
 							//there is no unit there and it is a moveable square
 						selectionSquare = greenSelectionSquarePrefab;
 						GameObject newUnit = Instantiate (selectionSquare, selectorCoord, Quaternion.identity, selectionSquaresSpawner);

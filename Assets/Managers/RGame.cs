@@ -157,28 +157,7 @@ namespace RLookout{
 			foreach (int squareNumber in usArmiesStartLocations) {
 				ConstructNewUnit(ConPossibleStartSquares[squareNumber], Mark.CON, UnitType.Army, 5000);
 			}
-//			int i = 0;
 
-//			foreach (int strength in uSAArmiesStartLocationStrengths) {
-//				if (strength != 0) {
-//							
-//					ConstructNewUnit (USPossibleStartSquares [i], Mark.USA, UnitType.Army, strength);		
-//
-//				}
-//				i++;
-//
-//			}
-//			i = 0;
-//
-//			foreach (int strength in conArmiesStartLocationStrengths) {
-//				if (strength != 0) {
-//					ConstructNewUnit (ConPossibleStartSquares [i], Mark.CON, UnitType.Army, strength);		
-//
-//				}
-//				i++;
-//			}
-				
-//
 			//FORTRESSES
 			string USFortress = "6 , 1"; 
 			string CONFortress = "1 , 6";
@@ -186,13 +165,20 @@ namespace RLookout{
 			ConstructNewUnit (USFortress, Mark.USA, UnitType.Fortress, 8000);
 			ConstructNewUnit (CONFortress, Mark.CON, UnitType.Fortress, 8000);
 
+			//Cities
+			string cityACoords = "1 , 2";
+			string cityBCoords = "6 , 5";
 
+			ConstructNewCity (cityACoords, Mark.None);
+			ConstructNewCity (cityBCoords, Mark.None);
+
+		
 		}
 
 		public void ConstructNewUnit(string Coords, Mark allegiance, UnitType unitType, int strength){
 			
 			//GameObject obj = new GameObject ();
-				RUnit newUnit = new RUnit();
+			RUnit newUnit = new RUnit();
 			newUnit.allegiance = allegiance;
 			newUnit.strength = strength;
 			newUnit.unitType = unitType;
@@ -217,13 +203,18 @@ namespace RLookout{
 			//Debug.Log("Construct New Unit: " + squareDictionary[Coords].unitOccupyingSquare.ToString());
 		}
 
-		public void SetStartPositions(int[] CONArmiesStrength, int[] USArmiesStrength){
-			conArmiesStartLocations = CONArmiesStrength;
-			usArmiesStartLocations = USArmiesStrength;
+		private void ConstructNewCity(string coords, Mark allegiance){
+			City newCity = new City ();
+			newCity.coords = coords;
+			newCity.occupiedBy = allegiance;
+			squareDictionary [coords].isCitySquare = true;
+			squareDictionary [coords].cityOccupyingSquare = newCity;
+		}
 
+		public void SetStartPositions(int[] CONArmiesStartPositions, int[] USAArmiesStartPositions){
+			conArmiesStartLocations = CONArmiesStartPositions;
+			usArmiesStartLocations = USAArmiesStartPositions;
 			//called from player controller right now....
-		
-
 		}
 
 		public List<RUnit> FindUnitsByAllegiance(Mark thisAllegiance){
@@ -297,7 +288,7 @@ namespace RLookout{
 				float attackAdvantageMultiplier = 1f;
 				float defenceAdvantageMultiplier = 4f / 3f;
 				float attackerStrength = attacker.strength;
-				float defenderStrength = defender.strength;
+				float defenderStrength = defender.strength + defender.defensiveBonus;
 
 				float attackerOdds = 0.5f * (attackerStrength / defenderStrength) * attackAdvantageMultiplier;
 				float defenderOdds = 0.5f * (defenderStrength / attackerStrength) * defenceAdvantageMultiplier;

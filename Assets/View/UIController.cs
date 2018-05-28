@@ -6,7 +6,7 @@ using UnityEngine.Events;
 
 public class UIController : MonoBehaviour {
 
-	public const string DidRequestEndTurn = "Display.DidBeginGameNotification";
+
 	public GameObject NetworkingHUD;
 	public GameObject GameplayHUD;
 	public GameObject PromptUserHUD;
@@ -20,6 +20,7 @@ public class UIController : MonoBehaviour {
 	public Text unitHUDStrength;
 	public Text unitHUDType;
 	public Text unitHUDMoves;
+	public Text unitHUDDefensiveBonus;
 
 
 	private RGameController gameController;
@@ -69,10 +70,7 @@ public class UIController : MonoBehaviour {
 	}
 
 	public void ChangeTurnText(){
-		RBoard board = FindObjectOfType<RBoard> ();
-
-		
-		EventManager.TriggerEvent (DidRequestEndTurn, this.gameObject);
+		gameController.RequestChangeTurn ();
 
 	}
 
@@ -138,8 +136,10 @@ public class UIController : MonoBehaviour {
 		unitHUDType.text = unit.unitType.ToString ();
 		unitHUDStrength.text = "Strength: " + unit.strength.ToString ();
 		unitHUDMoves.text = "Moves Left: " + unit.numMoves.ToString ();
+		unitHUDDefensiveBonus.text = "Defensive Bonus: " + unit.defensiveBonus.ToString ();
 		
 	}
+
 	//DeV options
 	public void PrintUnitDictionary(){
 		gameController.game.LoopThroughUnitDictionary ();

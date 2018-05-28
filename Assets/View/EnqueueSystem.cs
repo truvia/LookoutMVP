@@ -26,7 +26,7 @@ public class EnqueueSystem : MonoBehaviour {
 	IEnumerator WaitAndMove(float waitTime, GameObject unitGameObject, int[] intCoords){
 		yield return new WaitForSeconds (waitTime);
 		unitGameObject.GetComponent<RUnit> ().MoveTowardsAPlace (intCoords);
-		print("WaitAndMOve " + Time.time + " unit coords are " + unitGameObject.GetComponent<RUnit>().coords);
+		//print("WaitAndMOve " + Time.time + " unit coords are " + unitGameObject.GetComponent<RUnit>().coords);
 		//enquedPieceMovement.Remove (unit.GetComponent<RUnit> ().coords);
 	}
 
@@ -44,11 +44,11 @@ public class EnqueueSystem : MonoBehaviour {
 			int[] coordsToMoveTo = keyValue.Value;
 			Debug.Log ("dequeue pieces" + "original coords: " + originalCoords + " , coordsToMoveTo: " + coordsToMoveTo[0] + " , " + coordsToMoveTo[1]);
 			RUnit unit = gameController.game.squareDictionary [originalCoords].unitOccupyingSquare;
-			GameObject gameObjectOfUnit = gameController.FindUnitByUnitDictionary (unit);
-			yield return StartCoroutine (WaitAndMove (2.0f, gameObjectOfUnit, coordsToMoveTo));
+			GameObject gameObjectOfUnit = gameController.FindSceneUnitGameObjectBySquareDictionaryRUnit (unit);
+			yield return StartCoroutine (WaitAndMove (1.0f, gameObjectOfUnit, coordsToMoveTo));
 		}
 		ClearEnqueuedItems ();
-		yield return StartCoroutine (WaitAndRefreshBoard (2.0f));
+		yield return StartCoroutine (WaitAndRefreshBoard (1.0f));
 		uiController.ToggleShowPreventUserInputPanel (""); //Should toggle off
 	}
 
