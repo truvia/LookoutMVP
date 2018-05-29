@@ -215,7 +215,7 @@ public class UIController : MonoBehaviour {
 
 	private void SplitAction(){
 		HideHUD (PromptUserHUD);
-		gameController.selectedGameObject.GetComponent<RUnit> ().SplitUnit ();
+		gameController.selectedGameObject.GetComponent<UnitObject> ().SplitUnit ();
 	}
 
 	public void PromptUser(string question, UnityAction yesAction, UnityAction noAction){

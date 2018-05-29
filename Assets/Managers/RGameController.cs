@@ -149,7 +149,7 @@ public class RGameController : NetworkBehaviour {
 
 						GameObject gameObjectRunitOfSelectedPiece = FindSceneUnitGameObjectBySquareDictionaryRUnit (selectedUnit);
 						enqueueSystem.enquedPieceMovement.Add (selectedUnit.coords, squareClickedIntCoords); //enqueues movement for next player so they can see what moves the enemy took;
-						selectedGameObject.GetComponent<RUnit> ().MoveTowardsAPlace (squareClickedIntCoords); //physicallymoveunit
+							selectedGameObject.GetComponent<UnitObject> ().MoveTowardsAPlace (squareClickedIntCoords); //physicallymoveunit
 						game.MovePiece (selectedUnit, squareClickedStringCoords); //move the unit in the unitDictionary - may be worth putting this in its own method here.
 						SyncSceneUnitToDictionaryUnit (selectedUnit, selectedGameObject); //syncs the values in the Runit component on the board with the SquareDictionary values in the Game. 
 						CheckDefensiveBonus (selectedUnit);
@@ -190,7 +190,7 @@ public class RGameController : NetworkBehaviour {
 
 					if (intArray [0] == squareClickedIntCoords [0] && intArray [1] == squareClickedIntCoords [1]) {
 						enqueueSystem.enquedPieceMovement.Add (selectedGameObject.GetComponent<RUnit> ().coords, squareClickedIntCoords);
-						selectedGameObject.GetComponent<RUnit> ().MoveTowardsAPlace (squareClickedIntCoords);
+							selectedGameObject.GetComponent<UnitObject> ().MoveTowardsAPlace (squareClickedIntCoords);
 						RUnit defender = FindSquareDictionrayUnitByCoords (squareClickedStringCoords);
 						RUnit attacker = selectedUnit;
 						bool attackerWin = game.DoBattle (attacker, defender);
@@ -336,9 +336,9 @@ public class RGameController : NetworkBehaviour {
 		game.MergePiece (selectedUnit.coords, mergeUnit.coords);
 		CheckDefensiveBonus (mergeUnit);
 		SyncSceneUnitToDictionaryUnit (mergeUnit, gameObjectOfMergeUnit);
-		if (selectedGameObject.GetComponent<RUnit>().unitMount != null) {
-			selectedGameObject.GetComponent<RUnit>().unitMount.transform.SetParent (this.transform);
-			selectedGameObject.GetComponent<RUnit> ().unitMount.transform.position = new Vector3 (-50, 0f, -50);
+		if (selectedGameObject.GetComponent<UnitObject>().unitMount != null) {
+			selectedGameObject.GetComponent<UnitObject>().unitMount.transform.SetParent (this.transform);
+			selectedGameObject.GetComponent<UnitObject> ().unitMount.transform.position = new Vector3 (-50, 0f, -50);
 		}
 		Destroy (selectedGameObject);
 		board.DeselectPiece ();
@@ -348,16 +348,16 @@ public class RGameController : NetworkBehaviour {
 
 
 	public void SyncSceneUnitToDictionaryUnit(RUnit squareDictionaryRUnit, GameObject unitInScene){
-		RUnit unitInSceneRUnit = unitInScene.GetComponent<RUnit> ();
+		UnitObject unitInstanceInScene = unitInScene.GetComponent<UnitObject> ();
 
-		unitInSceneRUnit.allegiance = squareDictionaryRUnit.allegiance;
-		unitInSceneRUnit.coords = squareDictionaryRUnit.coords;
-		unitInSceneRUnit.numMoves = squareDictionaryRUnit.numMoves;
+		unitInstanceInScene.allegiance = squareDictionaryRUnit.allegiance;
+		unitInstanceInScene.coords = squareDictionaryRUnit.coords;
+		unitInstanceInScene.numMoves = squareDictionaryRUnit.numMoves;
 
-		unitInSceneRUnit.unitType = squareDictionaryRUnit.unitType;
+		unitInstanceInScene.unitType = squareDictionaryRUnit.unitType;
 
-		unitInSceneRUnit.defensiveBonus = squareDictionaryRUnit.defensiveBonus;
-		unitInSceneRUnit.strength = squareDictionaryRUnit.strength;
+		unitInstanceInScene.defensiveBonus = squareDictionaryRUnit.defensiveBonus;
+		unitInstanceInScene.strength = squareDictionaryRUnit.strength;
 	}
 
 	public void SyncCity(City squareDictionaryCity, GameObject objectInScene){

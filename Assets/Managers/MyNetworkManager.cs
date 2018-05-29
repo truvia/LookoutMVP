@@ -43,7 +43,7 @@ public class MyNetworkManager : NetworkManager  {
 
 	void PrintDots(){
 		Debug.Log (".");
-	
+	 	
 	}
 
 

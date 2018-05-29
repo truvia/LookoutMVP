@@ -25,7 +25,7 @@ public class EnqueueSystem : MonoBehaviour {
 
 	IEnumerator WaitAndMove(float waitTime, GameObject unitGameObject, int[] intCoords){
 		yield return new WaitForSeconds (waitTime);
-		unitGameObject.GetComponent<RUnit> ().MoveTowardsAPlace (intCoords);
+		unitGameObject.GetComponent<UnitObject> ().MoveTowardsAPlace (intCoords);
 		//print("WaitAndMOve " + Time.time + " unit coords are " + unitGameObject.GetComponent<RUnit>().coords);
 		//enquedPieceMovement.Remove (unit.GetComponent<RUnit> ().coords);
 	}
