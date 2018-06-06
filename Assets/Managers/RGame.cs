@@ -20,6 +20,14 @@ namespace RLookout{
 
 	}
 
+	enum LossLevels{
+		Minimal, //<0-10%
+		Some, //<11-30%
+		Significant, //<31-50%  
+		Heavy, //<51-70%
+		Pyrrhic//71-100
+	}
+
 	public class RGame {
 		//messages?
 		public const string DidBeginGameNotification = "Game.DidBeginGameNotification";
@@ -272,9 +280,10 @@ namespace RLookout{
 			DestroyPiece (coordsOfOriginalPiece);
 		}
 
-		public bool DoBattle(RUnit attacker, RUnit defender){
+		public bool DoBattle(RUnit attacker, RUnit defender){ //Mark 
 			
 			bool AttackerWin = false;
+			//Mark AttackerWin = Mark.None;
 			string attackerCoords = attacker.coords;
 			string defenderCoords = defender.coords;
 
@@ -290,13 +299,16 @@ namespace RLookout{
 				float attackerStrength = attacker.strength;
 				float defenderStrength = defender.strength + defender.defensiveBonus;
 
-				float attackerOdds = 0.5f * (attackerStrength / defenderStrength) * attackAdvantageMultiplier;
-				float defenderOdds = 0.5f * (defenderStrength / attackerStrength) * defenceAdvantageMultiplier;
+				float attackerRandomizer = 1 + (Random.Range (0f, 0.5f));
+				float defenderRandomizer = 1 + (Random.Range (0f, 0.9f));
 
-				Debug.Log ("Attacker to defender strength ratio is " + attackerStrength + " : " + defenderStrength);
-				Debug.Log ("Attacker odds to defender odds is " + attackerOdds + " : " + defenderOdds);
+				float attackerOdds = (0.5f * (attackerStrength / defenderStrength) * attackAdvantageMultiplier) * attackerRandomizer;
+				float defenderOdds = (0.5f * (defenderStrength / attackerStrength) * defenceAdvantageMultiplier) * defenderRandomizer;
 
-				if (attackerOdds > defenderOdds) {
+				Debug.Log ("Attacker to defender strength ratio is " + attackerStrength + " : " + defenderStrength + " including a defender randomizer of " + defenderRandomizer);
+				Debug.Log ("Attacker odds to defender odds is " + attackerOdds + " : " + defenderOdds + " including an attacker randomizer of " + attackerRandomizer);
+
+				if (attackerOdds > defenderOdds) { //&& attackerOdds / defenderOdds < 1) // some maths that will determine whether this is a significant ratio, i.e. enough to totally destroy attacker
 					float newFloat = defenderOdds / attackerOdds;
 					int newStrength = Mathf.RoundToInt(attackerStrength * (1 - newFloat));
 
@@ -309,8 +321,8 @@ namespace RLookout{
 					Debug.Log (" is the defender destroyed?" + defender.coords);
 					MovePiece (attacker, defenderCoords);
 
-					AttackerWin = true;
-				} else {
+					AttackerWin = true; //Winner = attacker.allegiance
+				} else { //if(defenderOdds > attackerOdds && there is a signficant defensive ratio
 					float newFloat = attackerOdds / defenderOdds;
 					int newStrength = Mathf.RoundToInt(defenderStrength * (1 - newFloat));
 					Debug.Log ("defender loss is " + (defenderStrength - newStrength));
@@ -319,15 +331,19 @@ namespace RLookout{
 
 					DestroyPiece (attackerCoords);
 					Debug.Log("defender strength is now " + defender.strength + " but the square dictionary strength is now" + squareDictionary[defender.coords].unitOccupyingSquare.strength);
-					AttackerWin = false;
-				}
+					AttackerWin = false; //winner = defender allegiance
+				} //else it is a stalemate and both sides should take losses and lose a movement point so that they are stuck next turn. 
 
+				//could also change the code so that it says that you claim the victory? so if attackerodds were better than defender odds, but it was still a stalemate it is classed as an inconclusive victory, but that you claim it as such. Same in terms of pyrhic victory.
 			} else {
 				AttackerWin = true;
 			}
 
 			return AttackerWin;
 		}
+
+		//DEBUG AREA
+
 
 		}
 	

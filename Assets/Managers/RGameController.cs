@@ -24,6 +24,7 @@ public class RGameController : NetworkBehaviour {
 	public GameObject selectedGameObject;
 	public bool unitSelected = false;
 	private RUnit mergeUnit;
+	private List<Battle> battleHistory = new List<Battle>();
 
 	public int boardwidth; 
 	public int boardheight; 
@@ -190,17 +191,33 @@ public class RGameController : NetworkBehaviour {
 
 					if (intArray [0] == squareClickedIntCoords [0] && intArray [1] == squareClickedIntCoords [1]) {
 						enqueueSystem.enquedPieceMovement.Add (selectedGameObject.GetComponent<RUnit> ().coords, squareClickedIntCoords);
-							selectedGameObject.GetComponent<UnitObject> ().MoveTowardsAPlace (squareClickedIntCoords);
+						selectedGameObject.GetComponent<UnitObject> ().MoveTowardsAPlace (squareClickedIntCoords);
+							Debug.Log ("battle square coords are " + ConvertArrayToString(squareClickedIntCoords));
+							selectedGameObject.GetComponent<UnitObject> ().ShowBattle (squareClickedIntCoords);
+						
+
 						RUnit defender = FindSquareDictionrayUnitByCoords (squareClickedStringCoords);
 						RUnit attacker = selectedUnit;
 						bool attackerWin = game.DoBattle (attacker, defender);
 
+						int defenderStartStrength = defender.strength;
+						int attackerStartStrength = attacker.strength;
+
 						if (attackerWin) {
-							uiController.SetBasicInfoText ("You won! Congratulations!", "Okay");
+							int losses = attackerStartStrength - attacker.strength;
+							Battle newBattle = new Battle ();
+							newBattle.SetWinner (attacker.allegiance);
+							newBattle.SetLosses (attacker.allegiance, losses, attackerStartStrength);
+							newBattle.SetBattleTime ();
+							battleHistory.Add (newBattle);		
+							
+							uiController.SetBasicInfoText ("You won! Your losses were " + newBattle.GetLossLevel().ToString() + ", amounting to: " + losses, "Okay");
 							uiController.ShowHUD (uiController.BasicInfoPopup);
 							uiController.HideHUD (uiController.UnitHUD);
 							DestroyUnitByUnitDictionary (defender);
-							CheckDefensiveBonus (attacker);
+							CheckDefensiveBonus (attacker); //as the attacker may have just taken over a city, check their defensive bonus;
+							
+							
 
 							SyncSceneUnitToDictionaryUnit (attacker, selectedGameObject);
 

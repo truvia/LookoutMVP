@@ -6,12 +6,7 @@ TagManager:
   tags:
   - selectorSquare
   - unitMount
-  - Pawn
-  - Queen
-  - King
-  - Rook
-  - Knight
-  - Bishop
+  - BattleSmoke
   layers:
   - Default
   - TransparentFX

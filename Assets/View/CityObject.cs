@@ -21,13 +21,11 @@ public class CityObject : City {
 
 	void Update(){
 		if (occupiedBy == RLookout.Mark.None) {
-			Debug.Log ("not occupied");
 			materialToChangeTo = startMaterial;
 		} else if (occupiedBy == RLookout.Mark.CON) {
-			Debug.Log ("con Occupied");
+			
 			materialToChangeTo = conMaterial;
 		} else if (occupiedBy == RLookout.Mark.USA) {
-			Debug.Log ("us occupied");
 			materialToChangeTo = usMaterial;
 		}
 

@@ -14,6 +14,7 @@ public class UnitObject : RUnit {
 	public bool startMoving = false;
 	public float speed = 3f;
 	public GameObject unitMount;
+	public GameObject battleSmoke;
 
 	// Use this for initialization
 	void Start () {
@@ -139,6 +140,13 @@ public class UnitObject : RUnit {
 		board.DeselectPiece (); //clear the selector squares, hide the UnitHUD and deselect the unit in gameController.
 
 	}
+
+	public void ShowBattle(int[] battleCoords){
+		Vector3 smokePos = new Vector3 (battleCoords [0] + 0.5f, this.transform.position.y, battleCoords [1] + 0.5f);
+		GameObject smoke = Instantiate (battleSmoke, smokePos, Quaternion.identity);
+	}
+
+		
 
 
 }

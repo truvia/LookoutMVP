@@ -222,5 +222,23 @@ public class UIController : MonoBehaviour {
 		//mehtod to ask the user what action they want to take, using uiController; common methods include uiController.CancelInput for no; 
 		WaitForUser (question, yesAction, noAction);
 	}
+
+
+	//DEBUG ZONE
+
+	public void InstantiateConUnit(string coords){
+		//allows creation of CON units from the UI
+		RBoard board = FindObjectOfType<RBoard> ();
+		if (gameController.game.squareDictionary [coords].squareOccupied) {
+			Debug.Log ("ERROR: can't create unit here as it is already occupied!");
+		} else {
+			gameController.game.ConstructNewUnit (coords, RLookout.Mark.CON, RLookout.UnitType.Army, 5000);
+			RUnit newUnit = gameController.game.squareDictionary [coords].unitOccupyingSquare;
+			board.PlaceUnit (newUnit);
+			board.RegenerateFogOfWar ();
+		}
+
+
+	}
 }
 

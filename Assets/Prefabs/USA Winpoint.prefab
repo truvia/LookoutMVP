@@ -20,6 +20,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4063534919090556}
   - component: {fileID: 114816540525026272}
+  - component: {fileID: 114610518190019916}
   m_Layer: 0
   m_Name: USA Winpoint
   m_TagString: Untagged
@@ -210,6 +211,28 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &114610518190019916
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1753623863546142}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16c42ebba25324640a0514a092a0a0e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unitType: 0
+  strength: 0
+  allegiance: 0
+  coords: 
+  numMoves: 0
+  defensiveBonus: 0
+  startMoving: 0
+  speed: 3
+  unitMount: {fileID: 1744749652831616, guid: 6778dfb8bfd3d0b4289f15b731ee8339, type: 2}
+  battleSmoke: {fileID: 1953386403457856, guid: 83872b05b3fee0d4d98a0d4a78bcdae6,
+    type: 2}
 --- !u!114 &114816540525026272
 MonoBehaviour:
   m_ObjectHideFlags: 1

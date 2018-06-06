@@ -39,9 +39,6 @@ public class RArmySpawner : NetworkBehaviour {
 
 		GameObject newUnit = Instantiate (newGameObject, location, Quaternion.identity, parent);
 
-
-		newUnit.AddComponent<UnitObject> ();
-
 		gameController.SyncSceneUnitToDictionaryUnit (unit, newUnit);
 
 	}

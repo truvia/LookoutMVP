@@ -9,10 +9,10 @@ public class Battle : MonoBehaviour {
 	int ConLosses;
 	int USALosses;
 	int turn;
-	LossLevels lossLevel;
-	string dateOfBattle;
+	float dateOfBattle;
 
-	enum LossLevels{
+	public LossLevels lossLevel;
+	public enum LossLevels{
 		Minimal, //<0-10%
 		Some, //<11-30%
 		Significant, //<31-50%  
@@ -42,6 +42,42 @@ public class Battle : MonoBehaviour {
 			lossLevel = LossLevels.Pyrrhic;
 		}
 	}
+
+	public void SetWinner(Mark winningPlayer){
+		winner = winningPlayer;
+	}
+
+
+	public void SetLosses(Mark allegiance, int losses, int startStrength){
+		if (allegiance == Mark.CON) {
+			ConLosses = losses;
+		} else if (allegiance == Mark.USA) {
+			USALosses = losses;
+		}
+		SetLossLevel (startStrength); 
+	}
+
+	public void SetBattleTime(){
+		dateOfBattle = Time.time;
+	}
+
+
+	public LossLevels GetLossLevel(){
+		return lossLevel;
+	}
+//	public void setConLosses(int conLosses, int startStrength){
+//		ConLosses = conLosses;
+//		SetLossLevel (startStrength);
+//	}
+//
+//	public void setUSLosses(int usLosses, int startStrength){
+//		USL = usLosses;
+//		SetLossLevel (startStrength);
+//	}
+
+
+
+
 
 
 }
