@@ -13,6 +13,8 @@ public class RGameController : NetworkBehaviour {
 	private UnityAction<System.Object> onBoardSquareClickedNotificationAction;
 	private UnityAction<System.Object> didStartLocalPlayerNotificationAction;
 
+	private UnityAction moveToPlace;
+
 	public const string DidRequestEndTurn = "UIController.DidRequestEndTurn";
 
 	private RBoard board;
@@ -24,7 +26,7 @@ public class RGameController : NetworkBehaviour {
 	public GameObject selectedGameObject;
 	public bool unitSelected = false;
 	private RUnit mergeUnit;
-	private List<Battle> battleHistory = new List<Battle>();
+	//private List<Battle> battleHistory = new List<Battle>();
 
 	public int boardwidth; 
 	public int boardheight; 
@@ -142,7 +144,7 @@ public class RGameController : NetworkBehaviour {
 				if (game.control == localPlayerController.myAllegiance) { //if it is my turn;
 			//	Debug.Log (" a piece is selected");
 
-					for (int i = 0; i < board.possibleMovementCoords.Count; i++) {  //if there is a moveable Square;
+					for (int i = 0; i < board.possibleMovementCoords.Count; i++) {  //if there is a square which this piece can move to
 							
 					int[] possibleMovementCoords = board.possibleMovementCoords [i];
 					if (possibleMovementCoords [0] == squareClickedIntCoords [0] && possibleMovementCoords [1] == squareClickedIntCoords [1]) {
@@ -150,7 +152,7 @@ public class RGameController : NetworkBehaviour {
 
 						GameObject gameObjectRunitOfSelectedPiece = FindSceneUnitGameObjectBySquareDictionaryRUnit (selectedUnit);
 						enqueueSystem.enquedPieceMovement.Add (selectedUnit.coords, squareClickedIntCoords); //enqueues movement for next player so they can see what moves the enemy took;
-							selectedGameObject.GetComponent<UnitObject> ().MoveTowardsAPlace (squareClickedIntCoords); //physicallymoveunit
+						selectedGameObject.GetComponent<UnitObject> ().MoveTowardsAPlace (squareClickedIntCoords); //physicallymoveunit
 						game.MovePiece (selectedUnit, squareClickedStringCoords); //move the unit in the unitDictionary - may be worth putting this in its own method here.
 						SyncSceneUnitToDictionaryUnit (selectedUnit, selectedGameObject); //syncs the values in the Runit component on the board with the SquareDictionary values in the Game. 
 						CheckDefensiveBonus (selectedUnit);
@@ -164,7 +166,8 @@ public class RGameController : NetworkBehaviour {
 
 					int[] intArray = board.mergeableSquareCoords [i];
 					if (intArray [0] == squareClickedIntCoords [0] && intArray [1] == squareClickedIntCoords [1]) {
-						//Debug.Log("merge piece requested");
+					
+							//Debug.Log("merge piece requested");
 							mergeUnit = FindSquareDictionrayUnitByCoords(squareClickedStringCoords);
 						//Debug.Log (mergeUnit.coords + " merge unit coords are this and is there a unit occupying square? " + game.squareDictionary[stringCoords].squareOccupied + " and stringcoords are " + stringCoords);
 			
@@ -186,11 +189,11 @@ public class RGameController : NetworkBehaviour {
 						}
 					}
 				}
-				for (int i = 0; i < board.battleSquareCoords.Count; i++) {
-					int[] intArray = board.battleSquareCoords [i];
+				for (int i = 0; i < board.battleSquareCoords.Count; i++) { //loop through all the squares that have been identified as battle squares
+						int[] thisSquareIntCoords = board.battleSquareCoords [i];  //the coords of this partciular battle square
 
-					if (intArray [0] == squareClickedIntCoords [0] && intArray [1] == squareClickedIntCoords [1]) {
-						enqueueSystem.enquedPieceMovement.Add (selectedGameObject.GetComponent<RUnit> ().coords, squareClickedIntCoords);
+					if (thisSquareIntCoords [0] == squareClickedIntCoords [0] && thisSquareIntCoords [1] == squareClickedIntCoords [1]) { //if this is the same square that has been clicked on
+						enqueueSystem.enquedPieceMovement.Add (selectedGameObject.GetComponent<RUnit> ().coords, squareClickedIntCoords); 
 						selectedGameObject.GetComponent<UnitObject> ().MoveTowardsAPlace (squareClickedIntCoords);
 							Debug.Log ("battle square coords are " + ConvertArrayToString(squareClickedIntCoords));
 							selectedGameObject.GetComponent<UnitObject> ().ShowBattle (squareClickedIntCoords);
@@ -198,37 +201,45 @@ public class RGameController : NetworkBehaviour {
 
 						RUnit defender = FindSquareDictionrayUnitByCoords (squareClickedStringCoords);
 						RUnit attacker = selectedUnit;
-						bool attackerWin = game.DoBattle (attacker, defender);
+						Mark battleWinner = game.DoBattle (attacker, defender);
 
 						int defenderStartStrength = defender.strength;
 						int attackerStartStrength = attacker.strength;
 
-						if (attackerWin) {
-							int losses = attackerStartStrength - attacker.strength;
-							Battle newBattle = new Battle ();
-							newBattle.SetWinner (attacker.allegiance);
-							newBattle.SetLosses (attacker.allegiance, losses, attackerStartStrength);
-							newBattle.SetBattleTime ();
-							battleHistory.Add (newBattle);		
-							
-							uiController.SetBasicInfoText ("You won! Your losses were " + newBattle.GetLossLevel().ToString() + ", amounting to: " + losses, "Okay");
-							uiController.ShowHUD (uiController.BasicInfoPopup);
-							uiController.HideHUD (uiController.UnitHUD);
-							DestroyUnitByUnitDictionary (defender);
-							CheckDefensiveBonus (attacker); //as the attacker may have just taken over a city, check their defensive bonus;
-							
-							
+							if (battleWinner == attacker.allegiance) {
+								//then it is the attacker that has won
 
-							SyncSceneUnitToDictionaryUnit (attacker, selectedGameObject);
+								Battle thisBattle =	game.battleHistory [game.battleHistory.Count - 1];
+								uiController.SetBasicInfoText ("Glorious Victory! Your losses were " + thisBattle.GetLossLevel (attacker.allegiance) + "!", "For God and Country!!");
 
-						} else {
-							uiController.SetBasicInfoText ("Oh no, you lost", "Dammit");
+								uiController.ShowHUD (uiController.BasicInfoPopup);
+								uiController.HideHUD (uiController.UnitHUD);
+								DestroyUnitByUnitDictionary (defender);
+								CheckDefensiveBonus (attacker); //as the attacker may have just taken over a city, check their defensive bonus;
+								SyncSceneUnitToDictionaryUnit (attacker, selectedGameObject);
+
+							} else if (battleWinner == Mark.None) {
+
+								Battle thisBattle = game.battleHistory [game.battleHistory.Count - 1];
+								uiController.SetBasicInfoText ("Stalemate! Your losses were " + thisBattle.GetLossLevel (attacker.allegiance) + ". Spies report that enemy losses were " + thisBattle.GetLossLevel(defender.allegiance), "Okay");
+								uiController.ShowHUD (uiController.BasicInfoPopup);
+								uiController.HideHUD (uiController.UnitHUD);
+								Debug.Log ("stalemate and attacker original coords are " + attacker.coords);
+
+								int[] coordsToMoveTo = new int[2];
+								coordsToMoveTo = ConvertStringToArray(attacker.coords, 2);
+
+								selectedGameObject.GetComponent<UnitObject> ().MoveTowardsAPlace (coordsToMoveTo);
+								SyncSceneUnitToDictionaryUnit (attacker, selectedGameObject);
+								SyncSceneUnitToDictionaryUnit (defender, FindSceneUnitGameObjectBySquareDictionaryRUnit (defender));
+
+							}else{
+							uiController.SetBasicInfoText ("Disaster! Your troops have been routed!", "Retreat!");
 							uiController.ShowHUD (uiController.BasicInfoPopup);
 							DestroyUnitByUnitDictionary (attacker);
 							SyncSceneUnitToDictionaryUnit (defender, FindSceneUnitGameObjectBySquareDictionaryRUnit (defender));
 						}
-						//Debug.Log ("done battle"); 
-
+						
 						board.DeselectPiece ();
 						game.CheckForGameOver ();
 					}
@@ -357,6 +368,7 @@ public class RGameController : NetworkBehaviour {
 			selectedGameObject.GetComponent<UnitObject>().unitMount.transform.SetParent (this.transform);
 			selectedGameObject.GetComponent<UnitObject> ().unitMount.transform.position = new Vector3 (-50, 0f, -50);
 		}
+
 		Destroy (selectedGameObject);
 		board.DeselectPiece ();
 		board.RegenerateFogOfWar ();
@@ -370,9 +382,7 @@ public class RGameController : NetworkBehaviour {
 		unitInstanceInScene.allegiance = squareDictionaryRUnit.allegiance;
 		unitInstanceInScene.coords = squareDictionaryRUnit.coords;
 		unitInstanceInScene.numMoves = squareDictionaryRUnit.numMoves;
-
 		unitInstanceInScene.unitType = squareDictionaryRUnit.unitType;
-
 		unitInstanceInScene.defensiveBonus = squareDictionaryRUnit.defensiveBonus;
 		unitInstanceInScene.strength = squareDictionaryRUnit.strength;
 	}
@@ -491,6 +501,11 @@ public class RGameController : NetworkBehaviour {
 				}
 			}
 		}
+	}
+
+	IEnumerator WaitForAFewSeconds(UnityAction actionToWaitFor){
+		yield return new WaitForSeconds (3);
+		actionToWaitFor.Invoke ();
 	}
 
 }

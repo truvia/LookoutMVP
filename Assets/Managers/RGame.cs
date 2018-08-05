@@ -39,6 +39,7 @@ namespace RLookout{
 
 		public int[] conArmiesStartLocations = new int[3];
 		public int[] usArmiesStartLocations = new int[3];
+		public List<Battle> battleHistory = new List<Battle> ();
 
 		public Mark control { get; private set;}
 		public Mark winner {get; private set;}
@@ -280,67 +281,146 @@ namespace RLookout{
 			DestroyPiece (coordsOfOriginalPiece);
 		}
 
-		public bool DoBattle(RUnit attacker, RUnit defender){ //Mark 
-			
-			bool AttackerWin = false;
-			//Mark AttackerWin = Mark.None;
+		public Mark DoBattle(RUnit attacker, RUnit defender){ 
+			//Definitions
+			Mark battleWinner = Mark.None; //overall winner (can be stalemate)
+			Mark winner = Mark.None; //nominal winner (i.e. they lost fewer troops)
+			Mark loser = Mark.None; //nominalloser
+
 			string attackerCoords = attacker.coords;
 			string defenderCoords = defender.coords;
 
-			//Debug.Log ("attacker strength is " + unitDictionary [attackercoords].strength + " defender strength is " + unitDictionary [defendercoorrds].strength);
+			Battle newBattle = new Battle ();
 
-			int actOfGodRandomizer = Mathf.FloorToInt (Random.Range (0f, 100f));
+			//Set relative strengths of attacker and defender. Defenders might have an additional defensive bonus in place (e.g. if in a city).
+			int attackerStrength = attacker.strength;
+			int defenderStrength = defender.strength + defender.defensiveBonus;
+
+			Debug.Log ("attacker strength is " + attackerStrength + " and defender strength is " + defenderStrength);
+			//Set the advantage multipliers. By default attacker is set to 1 and defender is set to 1.333 to simulate defensive bonus
+			// the attackers multiplier could be changed by other factors (e.g. leadership etc) in future.
+			float attackerAdvantageMultiplier = 1f;
+			float defenderAdvantageMultiplier = 4f / 3f;
+			Debug.Log ("attacker advantage  is " + attackerAdvantageMultiplier + " and defender advantage is " + defenderAdvantageMultiplier);
+
+			// randomizers give a random advantage to either defender or attacker and are separated in case we wish to further give more advantages
+			float attackerRandomizer = Random.Range (0.1f, 10f);
+			float defenderRandomizer = Random.Range (0.1f, 10f);
+			Debug.Log ("attacker randomizer is " + attackerRandomizer + " and defender randomizer is " + defenderRandomizer);
 
 
-			if (actOfGodRandomizer != 1) {
+			//Odds are the relative proporiton of strength once al the above variables are added in. 
+			// For now it is based aroudn the attacker strength divided by defender strength times by multiplier and randomizer. 
+			float attackerOdds = ((0.5f * (attackerStrength / defenderStrength)) * attackerAdvantageMultiplier) * attackerRandomizer;
+			float defenderOdds = ((0.5f * (defenderStrength / attackerStrength)) * defenderAdvantageMultiplier) * defenderRandomizer;
 
-				float attackAdvantageMultiplier = 1f;
-				float defenceAdvantageMultiplier = 4f / 3f;
-				float attackerStrength = attacker.strength;
-				float defenderStrength = defender.strength + defender.defensiveBonus;
+			Debug.Log ("Attacker odds are: " + attackerOdds + " but defender odds are " + defenderOdds);
 
-				float attackerRandomizer = 1 + (Random.Range (0f, 0.5f));
-				float defenderRandomizer = 1 + (Random.Range (0f, 0.9f));
+			//defines the nominal winner (i.e. who technically lost fewer percent of troops) - N.B. not the Battle winner (as an indecisive victory has the same technical effect as a stalemate). 
+			if (attackerOdds > defenderOdds) { 
+				//Then it is an attacker win;
+				winner = attacker.allegiance;
+				loser = defender.allegiance;
 
-				float attackerOdds = (0.5f * (attackerStrength / defenderStrength) * attackAdvantageMultiplier) * attackerRandomizer;
-				float defenderOdds = (0.5f * (defenderStrength / attackerStrength) * defenceAdvantageMultiplier) * defenderRandomizer;
-
-				Debug.Log ("Attacker to defender strength ratio is " + attackerStrength + " : " + defenderStrength + " including a defender randomizer of " + defenderRandomizer);
-				Debug.Log ("Attacker odds to defender odds is " + attackerOdds + " : " + defenderOdds + " including an attacker randomizer of " + attackerRandomizer);
-
-				if (attackerOdds > defenderOdds) { //&& attackerOdds / defenderOdds < 1) // some maths that will determine whether this is a significant ratio, i.e. enough to totally destroy attacker
-					float newFloat = defenderOdds / attackerOdds;
-					int newStrength = Mathf.RoundToInt(attackerStrength * (1 - newFloat));
-
-					Debug.Log ("attacker loss is " + (attackerStrength - newStrength));
-
-					attacker.strength = newStrength;
-					Debug.Log("attacker strength is now " + attacker.strength + " but the square dictionary strength is now" + squareDictionary[attacker.coords].unitOccupyingSquare.strength);
-
-					DestroyPiece (defender.coords);
-					Debug.Log (" is the defender destroyed?" + defender.coords);
-					MovePiece (attacker, defenderCoords);
-
-					AttackerWin = true; //Winner = attacker.allegiance
-				} else { //if(defenderOdds > attackerOdds && there is a signficant defensive ratio
-					float newFloat = attackerOdds / defenderOdds;
-					int newStrength = Mathf.RoundToInt(defenderStrength * (1 - newFloat));
-					Debug.Log ("defender loss is " + (defenderStrength - newStrength));
-
-					defender.strength = newStrength;
-
-					DestroyPiece (attackerCoords);
-					Debug.Log("defender strength is now " + defender.strength + " but the square dictionary strength is now" + squareDictionary[defender.coords].unitOccupyingSquare.strength);
-					AttackerWin = false; //winner = defender allegiance
-				} //else it is a stalemate and both sides should take losses and lose a movement point so that they are stuck next turn. 
-
-				//could also change the code so that it says that you claim the victory? so if attackerodds were better than defender odds, but it was still a stalemate it is classed as an inconclusive victory, but that you claim it as such. Same in terms of pyrhic victory.
 			} else {
-				AttackerWin = true;
+				//Then it is a defefnder win;
+				winner = defender.allegiance;
+				loser = attacker.allegiance;
 			}
 
-			return AttackerWin;
+			//To determine the proportion of losses in line with caclulated odds, identify what prportion of the total both are as a percentage
+			//N.B. may want to throw a further randomizer in there so it is not always in total proprtion ( to allow for pyhrric victories etc).
+			float totalOddsValue = attackerOdds + defenderOdds;
+			float attackerPercent = (attackerOdds / totalOddsValue);
+			float defenderPercent = (defenderOdds / totalOddsValue);
+
+
+			//if the attacker has lost 90% of it is troops, destroy the unit.
+			if (attackerPercent < 0.1) {
+				DestroyPiece (attacker.coords);
+				battleWinner = defender.allegiance;
+			
+				//if the defender has lost 90% of its troops, destroy the unit and declare attacker the battle winner
+			} else if (defenderPercent < 0.1) {
+				battleWinner = defender.allegiance;
+				DestroyPiece (defender.coords);
+				MovePiece (attacker, defender.coords);
+
+			} else {
+			//it was really a stalemate rather than an outright win, though there is a nominal winner.
+				battleWinner = Mark.None;
+				attacker.strength = Mathf.RoundToInt(attackerStrength * attackerPercent);
+
+				defender.strength = Mathf.RoundToInt(defenderStrength * defenderPercent); 
+			}			
+
+			//create a "Battle" instance, and set relative loss levles for each player. 
+			// add the battle to a list of battles (BattleHistory) so that we can access this info whenever we want. 
+			newBattle.SetWinner (battleWinner);
+			newBattle.SetBattleTime ();
+			newBattle.SetLosses (attacker.allegiance, Mathf.RoundToInt((1-attackerPercent)*attackerStrength), attacker.strength);
+			newBattle.SetLosses (defender.allegiance, Mathf.RoundToInt((1-defenderPercent)*defenderStrength), defender.strength);
+
+			battleHistory.Add (newBattle);
+
+			return battleWinner;
 		}
+
+//		private void CalculateDecisiveBattle(float winnerOdds, float loserOdds, RUnit winner, RUnit loser){
+//			float battleResult = winnerOdds / loserOdds; 
+//			int newStrength = Mathf.RoundToInt (winner.strength * (1 - battleResult));
+//			int winnerLoss = winner.strength - newStrength;
+//			Debug.Log ("winner loss is " + winnerLoss);
+//
+//			Battle newBattle = new Battle ();
+//			newBattle.SetWinner (winner.allegiance);
+//			newBattle.SetBattleTime ();
+//			newBattle.SetLosses (winner.allegiance, winnerLoss, winner.strength);
+//			newBattle.SetLosses (loser.allegiance, loser.strength, loser.strength);
+//
+//			winner.strength = newStrength;
+//			DestroyPiece (loser.coords);
+//
+//			if (winner.allegiance == control) {
+//
+//				newBattle.SetCoords (loser.coords);
+//
+//				//If the winner is the person currently taking their turn, the winner must be an attacker and should therefore moved. Otherwise it is a defender win and the piece should just die.
+//				MovePiece (winner, loser.coords);
+//			}
+//			battleHistory.Add (newBattle);
+//
+//		}
+
+//		private void CalculateIndecisiveBattle(float attackerOdds, float defenderOdds, RUnit attacker, RUnit defender){
+//			float attackerStrengthHit = attackerOdds / defenderOdds;
+//			float defenderStrengthHit = defenderOdds / attackerOdds;
+//
+//
+//
+//			int newAttackerStrength = Mathf.RoundToInt (attacker.strength * (1 - attackerStrengthHit));
+//			int newDefenderStrength = Mathf.RoundToInt (defender.strength * (1 - defenderStrengthHit));
+//
+//
+//			Debug.Log ("Indecisive Battle. Attacker to defender odds ratio was " + attackerOdds + " : " + defenderOdds);
+//			Debug.Log ("Attacker loss was: " + (attacker.strength - newAttackerStrength));
+//			Debug.Log ("Defender Loss was : " + (defender.strength - newDefenderStrength));
+//
+//			Battle newBattle = new Battle ();
+//			newBattle.SetWinner (Mark.None);
+//			newBattle.SetBattleTime ();
+//			newBattle.SetLosses (attacker.allegiance, Mathf.RoundToInt (attacker.strength - newAttackerStrength), attacker.strength);
+//			newBattle.SetLosses (defender.allegiance, Mathf.RoundToInt (defender.strength - newDefenderStrength), defender.strength);
+//			battleHistory.Add (newBattle);
+//
+//				
+//			attacker.strength = newAttackerStrength;
+//			defender.strength = newDefenderStrength;	
+//			attacker.numMoves -= 1;
+//			defender.numMoves -= 1;
+//
+//		}
+
 
 		//DEBUG AREA
 

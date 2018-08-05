@@ -12,6 +12,7 @@ public class RUnit : MonoBehaviour {
 	public string coords;
 	public int numMoves = 0;
 	public int defensiveBonus;
+	public int id;
 
 
 	public void AddDefensiveBonus(int bonusAmount){

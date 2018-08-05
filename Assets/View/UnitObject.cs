@@ -32,7 +32,7 @@ public class UnitObject : RUnit {
 
 	}
 
-	private void MoveThisPiece(){
+	private void MoveThisPiece(){ //has to be called in update to work
 		float step = speed * Time.deltaTime;
 		Vector3 TargetPosition = new Vector3 (moveToCoords [0], 0.05f, moveToCoords [1]);
 		transform.position = Vector3.MoveTowards (transform.position, TargetPosition, step);
@@ -96,26 +96,31 @@ public class UnitObject : RUnit {
 
 	}
 
-	public IEnumerator CoroutineMoveTowards (int[] intCoords){
-		yield return new WaitForSeconds (3);
-		moveToCoords[0] = intCoords[0] + 0.5f;
-		moveToCoords[1] = intCoords[1] + 0.5f;
-		startMoving = true;
-
-		if (startMoving) {
-			float step = speed * Time.deltaTime;
-			Vector3 TargetPosition = new Vector3 (moveToCoords [0], 0.05f, moveToCoords [1]);
-			transform.position = Vector3.MoveTowards (transform.position, TargetPosition, step);
-
-			if (transform.position == TargetPosition) {
-				startMoving = false;
-				moveToCoords = null;
-
-			}
-
-		}
-
-	}
+//	public IEnumerator CoroutineMoveTowards (int[] intCoords){
+//		yield return new WaitForSeconds (3);
+//		Debug.Log ("coroutineMoveTowardscalled");
+//		float[] newCords = new float[2];
+//		newCords [0] = intCoords [0] + 0.5f;
+//		newCords [1] = intCoords [1] + 0.5f;
+//
+////		moveToCoords[0] = intCoords[0] + 0.5f;
+////		moveToCoords[1] = intCoords[1] + 0.5f;
+//		startMoving = true;
+//
+//		if (startMoving) {
+//			float step = speed * Time.deltaTime;
+//			Vector3 TargetPosition = new Vector3 (newCords [0], 0.05f, newCords [1]);
+//			transform.position = Vector3.MoveTowards (transform.position, TargetPosition, step);
+//
+//			if (transform.position == TargetPosition) {
+//				startMoving = false;
+//				moveToCoords = null;
+//
+//			}
+//
+//		}
+//
+//	}
 
 	public void SplitUnit(){
 		Debug.Log("Unit split requested");
