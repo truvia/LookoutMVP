@@ -284,8 +284,8 @@ namespace RLookout{
 		public Mark DoBattle(RUnit attacker, RUnit defender){ 
 			//Definitions
 			Mark battleWinner = Mark.None; //overall winner (can be stalemate)
-			Mark winner = Mark.None; //nominal winner (i.e. they lost fewer troops)
-			Mark loser = Mark.None; //nominalloser
+//			Mark winner = Mark.None; //nominal winner (i.e. they lost fewer troops)
+//			Mark loser = Mark.None; //nominalloser
 
 			string attackerCoords = attacker.coords;
 			string defenderCoords = defender.coords;
@@ -317,16 +317,16 @@ namespace RLookout{
 			Debug.Log ("Attacker odds are: " + attackerOdds + " but defender odds are " + defenderOdds);
 
 			//defines the nominal winner (i.e. who technically lost fewer percent of troops) - N.B. not the Battle winner (as an indecisive victory has the same technical effect as a stalemate). 
-			if (attackerOdds > defenderOdds) { 
-				//Then it is an attacker win;
-				winner = attacker.allegiance;
-				loser = defender.allegiance;
-
-			} else {
-				//Then it is a defefnder win;
-				winner = defender.allegiance;
-				loser = attacker.allegiance;
-			}
+//			if (attackerOdds > defenderOdds) { 
+//				//Then it is an attacker win;
+//				winner = attacker.allegiance;
+//				loser = defender.allegiance;
+//
+//			} else {
+//				//Then it is a defefnder win;
+//				winner = defender.allegiance;
+//				loser = attacker.allegiance;
+//			}
 
 			//To determine the proportion of losses in line with caclulated odds, identify what prportion of the total both are as a percentage
 			//N.B. may want to throw a further randomizer in there so it is not always in total proprtion ( to allow for pyhrric victories etc).
